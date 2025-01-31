@@ -8,6 +8,52 @@ from typing import Optional
 from app.database.models.base import Base
 
 
+MoviesGenresModel = Table(
+    "movies_genres",
+    Base.metadata,
+    Column(
+        "movie_id",
+        ForeignKey("movies.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "genre_id",
+        ForeignKey("genres.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+MovieDirectorsModel = Table(
+    "movies_directors",
+    Base.metadata,
+    Column(
+        "movie_id",
+        ForeignKey("movies.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "director_id",
+        ForeignKey("directors.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+MoviesStarsModel = Table(
+    "movies_stars",
+    Base.metadata,
+    Column(
+        "movie_id",
+        ForeignKey("movies.id", ondelete="CASCADE"),
+        primary_key=True
+    ),
+    Column(
+        "star_id",
+        ForeignKey("stars.id", ondelete="CASCADE"),
+        primary_key=True
+    ),
+)
+
+
 class GenreModel(Base):
     __tablename__ = "genres"
 

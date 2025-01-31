@@ -29,9 +29,6 @@ class OrderModel(Base):
     total_amount: Mapped[Decimal] = mapped_column(
         Numeric(10, 2), nullable=True
     )
-    order_item: Mapped[list["OrderItemModel"]] = relationship(
-        "OrderItemModel", back_populates="order"
-    )
 
 
 class OrderItemModel(Base):

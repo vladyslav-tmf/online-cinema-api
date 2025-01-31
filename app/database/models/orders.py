@@ -29,6 +29,9 @@ class OrderModel(Base):
     total_amount: Mapped[Decimal] = mapped_column(
         Numeric(10, 2), nullable=True
     )
+    payments: Mapped[list["PaymentModel"]] = relationship(
+        "PaymentModel", back_populates="order", cascade="all, delete-orphan"
+    )
 
 
 class OrderItemModel(Base):

@@ -24,7 +24,7 @@ class OrderModel(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
     status: Mapped[OrderStatusEnum] = mapped_column(
-        SQLAlchemyEnum(OrderStatusEnum), nullable=False
+        SQLAlchemyEnum(OrderStatusEnum), nullable=False, default=OrderStatusEnum.PENDING
     )
     total_amount: Mapped[Decimal] = mapped_column(
         Numeric(10, 2), nullable=True

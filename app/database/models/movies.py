@@ -1,4 +1,7 @@
-from sqlalchemy import Integer, String
+from uuid import uuid4
+
+from sqlalchemy import Integer, String, Float, Text, DECIMAL, ForeignKey, \
+    UniqueConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.database.models.base import Base
@@ -11,8 +14,9 @@ class GenreModel(Base):
                                     autoincrement=True)
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    movies = relationship("MovieModel", secondary="movie_genres",
-                          back_populates="genres")
+    movies: Mapped[list["MovieModel"]] = relationship("MovieModel",
+                                                      secondary="movie_genres",
+                                                      back_populates="genres")
 
 
 class StarModel(Base):
@@ -22,8 +26,9 @@ class StarModel(Base):
                                     autoincrement=True)
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    movies = relationship("MovieModel", secondary="movie_stars",
-                          back_populates="stars")
+    movies: Mapped[list["MovieModel"]] = relationship("MovieModel",
+                                                      secondary="movie_stars",
+                                                      back_populates="stars")
 
 
 class DirectorModel(Base):
@@ -33,8 +38,9 @@ class DirectorModel(Base):
                                     autoincrement=True)
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    movies = relationship("MovieModel", secondary="movie_directors",
-                          back_populates="directors")
+    movies: Mapped[list["MovieModel"]] = relationship("MovieModel",
+                                                      secondary="movie_directors",
+                                                      back_populates="directors")
 
 
 class CertificationModel(Base):
@@ -44,6 +50,42 @@ class CertificationModel(Base):
                                     autoincrement=True)
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    movies = relationship("MovieModel",
-                          back_populates="certifications")
+    movies: Mapped[list["MovieModel"]] = relationship("MovieModel",
+                                                      back_populates="certifications")
 
+
+class MovieModel(Base):
+    __tablename__ = "movies"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True,
+                                    autoincrement=True)
+    uuid: Mapped[str] = mapped_column(String, unique=True,
+                                      default=lambda: str(uuid4()))  #
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    year: Mapped[int] = mapped_column(Integer, nullable=False)
+    time: Mapped[int] = mapped_column(Integer, nullable=False)
+    imdb: Mapped[float] = mapped_column(Float, nullable=False)
+    votes: Mapped[int] = mapped_column(Integer, nullable=False)
+    meta_score: Mapped[float] = mapped_column(Float, nullable=True)  #
+    gross: Mapped[float] = mapped_column(Float, nullable=True)  #
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    price: Mapped[float] = mapped_column(DECIMAL(10, 2))  #
+    certification_id: Mapped[int] = mapped_column(Integer, ForeignKey(
+        "certifications.id"), nullable=False)
+
+    certification: Mapped[list[CertificationModel]] = relationship(
+        "CertificationModel",
+        back_populates="movies")  # Many-to-one with Certification (via certification_id): Each movie has one certification.
+    genres: Mapped[list[GenreModel]] = relationship("GenreModel",
+                                                    secondary="movie_genres",
+                                                    back_populates="movies")
+    directors: Mapped[list[DirectorModel]] = relationship("DirectorModel",
+                                                          secondary="movies_directors",
+                                                          back_populates="movies")
+    stars: Mapped[list[StarModel]] = relationship("StarModel",
+                                                  secondary="movies_stars",
+                                                  back_populates="movies")
+
+    __table_args__ = (
+        UniqueConstraint("name", "year", "time"),
+    )

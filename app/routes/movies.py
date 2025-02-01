@@ -2,13 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
-from app.database.models.movies import MovieModel, GenreModel, StarModel
+from app.database.models.movies import MovieModel, GenreModel, StarModel, \
+    DirectorModel
 from app.schemas.movies import (
     PaginationSchema,
     MovieSchema,
     GenreSchema,
     StarSchema, MovieCreateSchema, MovieUpdateSchema, GenreCreateSchema,
-    GenreUpdateSchema, StarCreateSchema, StarUpdateSchema,
+    GenreUpdateSchema, StarCreateSchema, StarUpdateSchema, MovieListItemSchema,
+    MovieListResponseSchema,
 )
 
 router = APIRouter()
@@ -59,6 +61,38 @@ def get_movies(
         total_items=total_items,
         total_pages=total_pages
     )
+
+@router.get(
+    "/movies/search/",
+    response_model=MovieListResponseSchema,
+    summary="Search movies by title, description, actors, and directors",
+)
+def search_movies(
+        title: str = Query(None, description="Search by movie title"),
+        description: str = Query(None, description="Search by movie description"),
+        stars: str = Query(None, description="Search by actor's name"),
+        directors: str = Query(None, description="Search by director's name"),
+        db: Session = Depends(get_db),
+):
+    query = db.query(MovieModel)
+
+    if title:
+        query = query.filter(MovieModel.name.ilike(f"%{title}%"))
+    if description:
+        query = query.filter(MovieModel.overview.ilike(f"%{description}%"))  ###
+    if stars:
+        query = query.join(MovieModel.stars).filter(StarModel.name.ilike(f"%{stars}%"))
+    if directors:
+        query = query.join(MovieModel.directors).filter(DirectorModel.name.ilike(f"%{directors}%"))
+
+    movies = query.all()
+
+    if not movies:
+        raise HTTPException(status_code=404, detail="No movies found.")
+
+    movie_list = [MovieListItemSchema.model_validate(movie) for movie in movies]
+    return MovieListResponseSchema(movies=movie_list)
+
 
 @router.post("/movies/",
              response_model=MovieSchema,

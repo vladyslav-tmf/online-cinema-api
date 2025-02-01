@@ -61,6 +61,30 @@ class PaginationSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class MovieListItemSchema(BaseModel):
+    id: int
+    uuid: str
+    name: str
+    year: int
+    time: int
+    imdb: float
+    votes: int
+    meta_score: Optional[float] = None
+    gross: Optional[float] = None
+    description: str
+    price: float
+    certification_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MovieListResponseSchema(BaseModel):
+    movies: List[MovieListItemSchema]
+    total_count: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class MovieCreateSchema(BaseModel):
     uuid: UUID
     name: str

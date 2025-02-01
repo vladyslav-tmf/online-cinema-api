@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from sqlalchemy import Integer, String, Float, Text, DECIMAL, ForeignKey, \
-    UniqueConstraint
+    UniqueConstraint, Table, Column
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import Optional
 

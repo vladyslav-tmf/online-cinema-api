@@ -12,14 +12,11 @@ from sqlalchemy import (
 from sqlalchemy.orm import (
     relationship,
     Mapped,
-    mapped_column,
-    DeclarativeBase
+    mapped_column
 )
 from typing import Optional
 
-
-class Base(DeclarativeBase):
-    pass
+from app.database.models.base import Base
 
 
 class MoviesGenresModel(Base):

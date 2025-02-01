@@ -1,57 +1,61 @@
 from uuid import uuid4
 
-from sqlalchemy import Integer, String, Float, Text, DECIMAL, ForeignKey, \
-    UniqueConstraint, Table, Column
+from sqlalchemy import (
+    Integer,
+    String,
+    Float,
+    Text,
+    DECIMAL,
+    ForeignKey,
+    UniqueConstraint
+)
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import Optional
 
 from app.database.models.base import Base
 
 
-MoviesGenresModel = Table(
-    "movies_genres",
-    Base.metadata,
-    Column(
-        "movie_id",
-        ForeignKey("movies.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-    Column(
-        "genre_id",
-        ForeignKey("genres.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-)
+class Base(DeclarativeBase):
+    pass
 
-MovieDirectorsModel = Table(
-    "movies_directors",
-    Base.metadata,
-    Column(
-        "movie_id",
-        ForeignKey("movies.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-    Column(
-        "director_id",
-        ForeignKey("directors.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-)
 
-MoviesStarsModel = Table(
-    "movies_stars",
-    Base.metadata,
-    Column(
-        "movie_id",
+class MoviesGenresModel(Base):
+    __tablename__ = "movies_genres"
+
+    movie_id: Mapped[int] = mapped_column(
         ForeignKey("movies.id", ondelete="CASCADE"),
         primary_key=True
-    ),
-    Column(
-        "star_id",
+    )
+    genre_id: Mapped[int] = mapped_column(
+        ForeignKey("genres.id", ondelete="CASCADE"),
+        primary_key=True
+    )
+
+
+class MovieDirectorsModel(Base):
+    __tablename__ = "movies_directors"
+
+    movie_id: Mapped[int] = mapped_column(
+        ForeignKey("movies.id", ondelete="CASCADE"),
+        primary_key=True
+    )
+    director_id: Mapped[int] = mapped_column(
+        ForeignKey("directors.id", ondelete="CASCADE"),
+        primary_key=True
+    )
+
+
+class MoviesStarsModel(Base):
+    __tablename__ = "movies_stars"
+
+    movie_id: Mapped[int] = mapped_column(
+        ForeignKey("movies.id", ondelete="CASCADE"),
+        primary_key=True
+    )
+    star_id: Mapped[int] = mapped_column(
         ForeignKey("stars.id", ondelete="CASCADE"),
         primary_key=True
-    ),
-)
+    )
 
 
 class GenreModel(Base):

@@ -41,6 +41,7 @@ class PaymentItemSchema(BaseModel):
     price_at_payment: Decimal
     payment: PaymentSchema
     order_item: OrderItemSchema
+
     model_config = {
         "from_attributes": True
     }

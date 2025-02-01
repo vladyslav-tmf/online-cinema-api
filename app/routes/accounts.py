@@ -20,11 +20,14 @@ from database.models.accounts import (
     UserModel,
 )
 from database.session import get_db
+from exceptions.security import BaseSecurityError
 from notifications.interfaces import EmailSenderInterface
 from schemas.accounts import (
     MessageResponseSchema,
     PasswordResetCompleteRequestSchema,
     PasswordResetRequestSchema,
+    TokenRefreshRequestSchema,
+    TokenRefreshResponseSchema,
     UserActivationRequestSchema,
     UserLoginRequestSchema,
     UserLoginResponseSchema,
@@ -264,3 +267,39 @@ def login_user(
         access_token=jwt_access_token,
         refresh_token=jwt_refresh_token,
     )
+
+
+@router.post("/refresh/", response_model=TokenRefreshResponseSchema)
+def refresh_access_token(
+    token_data: TokenRefreshRequestSchema,
+    db: Session = Depends(get_db),
+    jwt_manager: JWTAuthManagerInterface = Depends(get_jwt_auth_manager),
+) -> TokenRefreshResponseSchema:
+    try:
+        decoded_token = jwt_manager.decode_refresh_token(token_data.refresh_token)
+        user_id = decoded_token.get("user_id")
+    except BaseSecurityError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
+        )
+
+    refresh_token_record = (
+        db.query(RefreshTokenModel).filter_by(token=token_data.refresh_token).first()
+    )
+    if not refresh_token_record:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token not found.",
+        )
+
+    user = db.query(UserModel).filter_by(id=user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    new_access_token = jwt_manager.create_access_token({"user_id": user_id})
+
+    return TokenRefreshResponseSchema(access_token=new_access_token)

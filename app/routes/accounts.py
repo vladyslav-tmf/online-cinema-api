@@ -17,6 +17,7 @@ from database.session import get_db
 from notifications.interfaces import EmailSenderInterface
 from schemas.accounts import (
     MessageResponseSchema,
+    PasswordResetCompleteRequestSchema,
     PasswordResetRequestSchema,
     UserActivationRequestSchema,
     UserRegistrationRequestSchema,
@@ -154,3 +155,52 @@ def request_password_reset_token(
     return MessageResponseSchema(
         message="If you are registered, you will receive an email with instructions."
     )
+
+
+@router.post("/reset-password/complete/", response_model=MessageResponseSchema)
+def reset_password(
+    data: PasswordResetCompleteRequestSchema,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    email_sender: EmailSenderInterface = Depends(get_accounts_email_notificator),
+) -> MessageResponseSchema:
+    user = db.query(UserModel).filter_by(email=data.email).first()
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email or token."
+        )
+
+    token_record = db.query(PasswordResetTokenModel).filter_by(user_id=user.id).first()
+
+    expires_at = cast(datetime, token_record.expires_at).replace(tzinfo=timezone.utc)
+
+    if (
+        not token_record
+        or token_record.token != data.token
+        or expires_at < datetime.now(timezone.utc)
+    ):
+        if token_record:
+            db.delete(token_record)
+            db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email or token."
+        )
+
+    try:
+        user.password = data.password
+        db.delete(token_record)
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while resetting the password.",
+        )
+
+    login_link = "http://127.0.0.1/accounts/login/"
+
+    background_tasks.add_task(
+        email_sender.send_password_reset_complete_email, str(data.email), login_link
+    )
+
+    return MessageResponseSchema(message="Password reset successfully.")

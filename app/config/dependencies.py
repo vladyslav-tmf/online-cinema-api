@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-from base import get_db
+from database.session import get_db
 from database.models.accounts import UserModel
 from dotenv import load_dotenv
 

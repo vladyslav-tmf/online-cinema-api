@@ -6,8 +6,8 @@ from starlette import status
 from database.models.shopping_carts import CartModel, CartItemModel
 from database.models.movies import MovieModel
 from schemas.shopping_carts import CartSchema, CartItemSchema
-from database.models.base import get_db
-from database.models.auth import get_current_user
+from database.session import get_db
+from config.dependencies import get_current_user
 from database.models.accounts import UserModel
 
 

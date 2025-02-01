@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from config.dependencies import get_accounts_email_notificator
 from database.models.accounts import (
     ActivationTokenModel,
+    PasswordResetTokenModel,
     UserGroupEnum,
     UserGroupModel,
     UserModel,
@@ -16,6 +17,7 @@ from database.session import get_db
 from notifications.interfaces import EmailSenderInterface
 from schemas.accounts import (
     MessageResponseSchema,
+    PasswordResetRequestSchema,
     UserActivationRequestSchema,
     UserRegistrationRequestSchema,
     UserRegistrationResponseSchema,
@@ -117,3 +119,38 @@ def activate_account(
     )
 
     return MessageResponseSchema(message="User account activated successfully.")
+
+
+@router.post("/password-reset/request/", response_model=MessageResponseSchema)
+def request_password_reset_token(
+    data: PasswordResetRequestSchema,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    email_sender: EmailSenderInterface = Depends(get_accounts_email_notificator),
+) -> MessageResponseSchema:
+    user = db.query(UserModel).filter_by(email=data.email).first()
+
+    if not user or not user.is_active:
+        return MessageResponseSchema(
+            message=(
+                "If you are registered, you will receive an email with instructions."
+            )
+        )
+
+    db.query(PasswordResetTokenModel).filter_by(user_id=user.id).delete()
+
+    reset_token = PasswordResetTokenModel(user_id=cast(int, user.id))
+    db.add(reset_token)
+    db.commit()
+
+    password_reset_complete_link = "http://127.0.0.1/accounts/password-reset-complete/"
+
+    background_tasks.add_task(
+        email_sender.send_password_reset_email,
+        str(data.email),
+        password_reset_complete_link,
+    )
+
+    return MessageResponseSchema(
+        message="If you are registered, you will receive an email with instructions."
+    )

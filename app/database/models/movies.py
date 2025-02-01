@@ -9,14 +9,14 @@ from sqlalchemy import (
     ForeignKey,
     UniqueConstraint
 )
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy.orm import (
+    relationship,
+    Mapped,
+    mapped_column
+)
 from typing import Optional
 
 from app.database.models.base import Base
-
-
-class Base(DeclarativeBase):
-    pass
 
 
 class MoviesGenresModel(Base):

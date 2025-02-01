@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -11,6 +12,20 @@ fastapi = {extras = ["standard"], version = "^0.115.8"}
 pydantic-settings = "^2.7.1"
 sqlalchemy = "^2.0.37"
 passlib = "^1.7.4"
+black = "^25.1.0"
+flake8 = "^7.1.1"
+flake8-pyproject = "^1.2.3"
+pillow = "^11.1.0"
+
+[tool.black]
+line-length = 88
+
+[tool.flake8]
+max-line-length = 88
+ignore = "F821"
+max-complexity = 18
+exclude = ".venv,venv"
+count = true
 
 
 [build-system]

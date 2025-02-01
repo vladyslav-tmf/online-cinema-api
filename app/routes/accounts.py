@@ -1,3 +1,6 @@
+from datetime import datetime, timezone
+from typing import cast
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -12,6 +15,8 @@ from database.models.accounts import (
 from database.session import get_db
 from notifications.interfaces import EmailSenderInterface
 from schemas.accounts import (
+    MessageResponseSchema,
+    UserActivationRequestSchema,
     UserRegistrationRequestSchema,
     UserRegistrationResponseSchema,
 )
@@ -62,3 +67,53 @@ def register_user(
         )
 
         return UserRegistrationResponseSchema.model_validate(new_user)
+
+
+@router.post("/activate/", response_model=MessageResponseSchema)
+def activate_account(
+    activation_data: UserActivationRequestSchema,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    email_sender: EmailSenderInterface = Depends(get_accounts_email_notificator),
+) -> MessageResponseSchema:
+    token_record = (
+        db.query(ActivationTokenModel)
+        .join(UserModel)
+        .filter(
+            UserModel.email == activation_data.email,
+            ActivationTokenModel.token == activation_data.token,
+        )
+        .first()
+    )
+
+    if not token_record or cast(datetime, token_record.expires_at).replace(
+        tzinfo=timezone.utc
+    ) < datetime.now(timezone.utc):
+        if token_record:
+            db.delete(token_record)
+            db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired activation token.",
+        )
+
+    user = token_record.user
+    if user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User account is already active.",
+        )
+
+    user.is_active = True
+    db.delete(token_record)
+    db.commit()
+
+    login_link = "http://127.0.0.1/accounts/login/"
+
+    background_tasks.add_task(
+        email_sender.send_activation_complete_email,
+        str(activation_data.email),
+        login_link,
+    )
+
+    return MessageResponseSchema(message="User account activated successfully.")

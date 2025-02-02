@@ -23,7 +23,7 @@ def get_order_list(
     date: datetime.datetime = Query(description="filter by date"),
     status: str = Query(description="filter by status"),
     db: Session = Depends(get_db),
-    current_user: UserModel = Depends(get_current_user)
+    current_user: UserModel = Depends(get_current_user),
 ):
     offset = (page - 1) * per_page
 
@@ -47,8 +47,16 @@ def get_order_list(
 
     response = OrderListResponseSchema(
         orders=OrderSchema.model_validate(order),
-        prev_page=f"/theater/movies/?page={page - 1}&per_page={per_page}" if page > 1 else None,
-        next_page=f"/theater/movies/?page={page + 1}&per_page={per_page}" if page < total_pages else None,
+        prev_page=(
+            f"/theater/movies/?page={page - 1}&per_page={per_page}"
+            if page > 1
+            else None
+        ),
+        next_page=(
+            f"/theater/movies/?page={page + 1}&per_page={per_page}"
+            if page < total_pages
+            else None
+        ),
         total_pages=total_pages,
         total_items=total_items,
     )
@@ -59,7 +67,7 @@ def get_order_list(
 def create_order(
     order_data: OrderCreateSchema,
     db: Session = Depends(get_db),
-    current_user: UserModel = Depends(get_current_user)
+    current_user: UserModel = Depends(get_current_user),
 ):
 
     try:
@@ -70,20 +78,16 @@ def create_order(
         db.refresh(order)
 
         if not order_data.order_items:
-            raise HTTPException(
-                status_code=409,
-                detail="Your cart is empty"
-            )
+            raise HTTPException(status_code=409, detail="Your cart is empty")
 
         for order_item in order_data.order_items:
             existing_order_item = db.query(CartItemModel).filter_by(
-                order_id=order.id,
-                movie_id=order_item.movie_id
+                order_id=order.id, movie_id=order_item.movie_id
             )
             if existing_order_item:
                 raise HTTPException(
                     status_code=409,
-                    detail=f"Duplicate purchase of {order_item.movie.name}"
+                    detail=f"Duplicate purchase of {order_item.movie.name}",
                 )
             item = OrderItemModel(
                 order_id=order.id,
@@ -106,22 +110,18 @@ def create_order(
 
 @router.post("/order/{order_id}/cancel")
 def cancel_order(
-        order_id: int,
-        db: Session = Depends(get_db),
-        current_user: UserModel = Depends(get_current_user)
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
 ):
     order = db.query(OrderModel).filter_by(id=order_id).first()
 
     if order.user_id != current_user.id and current_user.group != UserGroupEnum.ADMIN:
-        raise HTTPException(
-            status_code=403,
-            detail="You don't have permissions."
-        )
+        raise HTTPException(status_code=403, detail="You don't have permissions.")
 
     if not order:
         raise HTTPException(
-            status_code=404,
-            detail="Order with the given ID was not found."
+            status_code=404, detail="Order with the given ID was not found."
         )
 
     if order.status == OrderStatusEnum.PAID:
@@ -133,22 +133,18 @@ def cancel_order(
 
 @router.delete("/order/{order_id}", status_code=204)
 def delete_order(
-        order_id: int,
-        db: Session = Depends(get_db),
-        current_user: UserModel = Depends(get_current_user)
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
 ):
     order = db.query(OrderModel).filter_by(id=order_id).first()
 
     if order.user_id != current_user.id and current_user.group != UserGroupEnum.ADMIN:
-        raise HTTPException(
-            status_code=403,
-            detail="You don't have permissions."
-        )
+        raise HTTPException(status_code=403, detail="You don't have permissions.")
 
     if not order:
         raise HTTPException(
-            status_code=404,
-            detail="Order with the given ID was not found."
+            status_code=404, detail="Order with the given ID was not found."
         )
 
     db.delete(order)

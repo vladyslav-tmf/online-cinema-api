@@ -22,12 +22,13 @@ alembic = "^1.14.1"
 
 [tool.black]
 line-length = 88
+exclude = "app/database/migrations"
 
 [tool.flake8]
 max-line-length = 88
-ignore = "F821"
+ignore = "F821, W503"
 max-complexity = 18
-exclude = ".venv,venv"
+exclude = ".venv,venv,migrations"
 count = true
 
 

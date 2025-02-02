@@ -40,10 +40,11 @@ class CartItemModel(Base):
     movie = relationship("MovieModel", back_populates="cart_items")
 
     __table_args__ = (
-        UniqueConstraint(
-            "cart_id", "movie_id", name="unique_movie_constraint"
-        ),
+        UniqueConstraint("cart_id", "movie_id", name="unique_movie_constraint"),
     )
 
     def __repr__(self):
-        return f"<CartItemModel(id={self.id}, cart_id={self.cart_id}, movie_id={self.movie_id}, added_at={self.added_at})>"
+        return (
+            f"<CartItemModel(id={self.id}, cart_id={self.cart_id}, "
+            f"movie_id={self.movie_id}, added_at={self.added_at})>"
+        )

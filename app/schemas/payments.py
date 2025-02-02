@@ -13,9 +13,7 @@ class PaymentListSchema(BaseModel):
     amount: Decimal
     status: PaymentStatusEnum
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
 
 class PaymentSchema(BaseModel):
@@ -29,9 +27,7 @@ class PaymentSchema(BaseModel):
     order: OrderSchema
     items: list["PaymentItemSchema"]
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
 
 class PaymentItemSchema(BaseModel):
@@ -42,6 +38,4 @@ class PaymentItemSchema(BaseModel):
     payment: PaymentSchema
     order_item: OrderItemSchema
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}

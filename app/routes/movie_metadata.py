@@ -10,7 +10,12 @@ from app.database.models.movies import (
     StarModel,
 )
 from app.database.session import get_db
-from app.schemas.movies import CertificationSchema, DirectorSchema, GenreSchema, StarSchema
+from app.schemas.movies import (
+    CertificationSchema,
+    DirectorSchema,
+    GenreSchema,
+    StarSchema,
+)
 
 router = APIRouter()
 

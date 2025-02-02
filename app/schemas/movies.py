@@ -86,6 +86,7 @@ class MovieCreateSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class MovieUpdateSchema(MovieCreateSchema):
     name: str | None = Field(None, min_length=1, max_length=255)
     year: int | None = Field(None, ge=1888, le=2100)

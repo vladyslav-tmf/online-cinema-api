@@ -16,9 +16,9 @@ from app.schemas.movies import (
     MovieUpdateSchema,
     PaginationSchema,
 )
-from config.dependencies import get_current_user
-from database.models.accounts import UserGroupEnum, UserModel
-from database.models.movie_interactions import (
+from app.config.dependencies import get_current_user
+from app.database.models.accounts import UserGroupEnum, UserModel
+from app.database.models.movie_interactions import (
     CommentLikeModel,
     LikeTypeEnum,
     MovieCommentModel,
@@ -26,7 +26,7 @@ from database.models.movie_interactions import (
     MovieLikeModel,
     MovieRatingModel,
 )
-from schemas.movie_interactions import (
+from app.schemas.movie_interactions import (
     CommentLikeResponseSchema,
     MovieCommentCreateSchema,
     MovieCommentResponseSchema,
@@ -421,7 +421,7 @@ def delete_movie(
     movie_id: int,
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
-) -> dict[str, str]:
+):
     if not current_user.has_group(UserGroupEnum.ADMIN):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -436,7 +436,6 @@ def delete_movie(
 
     db.delete(movie)
     db.commit()
-    return {"message": "Movie deleted successfully"}
 
 
 @router.post("/{movie_id}/like", response_model=MovieLikeResponseSchema)

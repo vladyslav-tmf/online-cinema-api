@@ -4,21 +4,21 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import HttpUrl
 from sqlalchemy.orm import Session
 
-from config.dependencies import get_jwt_auth_manager, get_s3_storage_client
-from database.models.accounts import (
+from app.config.dependencies import get_jwt_auth_manager, get_s3_storage_client
+from app.database.models.accounts import (
     GenderEnum,
     UserGroupEnum,
     UserGroupModel,
     UserModel,
     UserProfileModel,
 )
-from database.session import get_db
-from exceptions.security import BaseSecurityError
-from exceptions.storage import S3FileUploadError
-from schemas.profiles import ProfileCreateSchema, ProfileResponseSchema
-from security.http import get_token
-from security.interfaces import JWTAuthManagerInterface
-from storages.interfaces import S3StorageInterface
+from app.database.session import get_db
+from app.exceptions.security import BaseSecurityError
+from app.exceptions.storage import S3FileUploadError
+from app.schemas.profiles import ProfileCreateSchema, ProfileResponseSchema
+from app.security.http import get_token
+from app.security.interfaces import JWTAuthManagerInterface
+from app.storages.interfaces import S3StorageInterface
 
 router = APIRouter()
 

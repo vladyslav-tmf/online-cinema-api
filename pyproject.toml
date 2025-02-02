@@ -18,15 +18,17 @@ flake8 = "^7.1.1"
 flake8-pyproject = "^1.2.3"
 pillow = "^11.1.0"
 boto3 = "^1.36.11"
+alembic = "^1.14.1"
 
 [tool.black]
 line-length = 88
+exclude = "app/database/migrations"
 
 [tool.flake8]
 max-line-length = 88
-ignore = "F821"
+ignore = "F821, W503"
 max-complexity = 18
-exclude = ".venv,venv"
+exclude = ".venv,venv,migrations"
 count = true
 
 

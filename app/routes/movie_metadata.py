@@ -1,16 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from config.dependencies import get_current_user
-from database.models.accounts import UserGroupEnum, UserModel
-from database.models.movies import (
+from app.config.dependencies import get_current_user
+from app.database.models.accounts import UserGroupEnum, UserModel
+from app.database.models.movies import (
     CertificationModel,
     DirectorModel,
     GenreModel,
     StarModel,
 )
-from database.session import get_db
-from schemas.movies import CertificationSchema, DirectorSchema, GenreSchema, StarSchema
+from app.database.session import get_db
+from app.schemas.movies import (
+    CertificationSchema,
+    DirectorSchema,
+    GenreSchema,
+    StarSchema,
+)
 
 router = APIRouter()
 

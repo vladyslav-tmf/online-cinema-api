@@ -1,6 +1,4 @@
-movie_schema_example = {
-
-}
+movie_schema_example = {}
 
 order_schema_example = {
     "id": 5,
@@ -15,5 +13,5 @@ order_item_schema_example = {
     "id": 2,
     "order_id": 4,
     "movie_id": 2,
-    "price_at_order": 9.5
+    "price_at_order": 9.5,
 }

@@ -15,10 +15,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
-from database.models.base import Base
-from security.passwords import hash_password, verify_password
-from security.utils import generate_secure_token
-from validators.accounts import validate_email, validate_password_strength
+from app.database.models.base import Base
+from app.security.passwords import hash_password, verify_password
+from app.security.utils import generate_secure_token
+from app.validators.accounts import validate_email, validate_password_strength
 
 
 class UserGroupEnum(str, enum.Enum):
@@ -112,6 +112,10 @@ class UserModel(Base):
 
     movie_ratings: Mapped[list["MovieRatingModel"]] = relationship(
         "MovieRatingModel", back_populates="user", cascade="all, delete-orphan"
+    )
+
+    cart: Mapped[Optional["CartModel"]] = relationship(
+        "CartModel", back_populates="user", cascade="all, delete-orphan"
     )
 
     def __repr__(self):

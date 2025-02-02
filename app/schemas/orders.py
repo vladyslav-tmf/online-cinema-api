@@ -5,8 +5,8 @@ from pydantic import BaseModel
 
 from database.models.movies import MovieModel
 from database.models.orders import OrderStatusEnum
-from schemas.examples.orders import order_schema_example, order_item_schema_example
-from schemas.shopping_carts import CartItemSchema
+from schemas.examples.orders import order_item_schema_example, order_schema_example
+from schemas.shopping_carts import CartResponseSchema
 
 
 class OrderSchema(BaseModel):
@@ -19,16 +19,12 @@ class OrderSchema(BaseModel):
 
     model_config = {
         "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                order_schema_example
-            ]
-        }
+        "json_schema_extra": {"examples": [order_schema_example]},
     }
 
 
 class OrderCreateSchema(BaseModel):
-    order_items: list[CartItemSchema]
+    order_items: list[CartResponseSchema]
 
 
 class OrderListResponseSchema(BaseModel):
@@ -46,9 +42,5 @@ class OrderItemSchema(BaseModel):
 
     model_config = {
         "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                order_item_schema_example
-            ]
-        }
+        "json_schema_extra": {"examples": [order_item_schema_example]},
     }

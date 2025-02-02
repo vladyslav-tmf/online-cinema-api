@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 
-from routes.accounts import router as accounts_router
-from routes.movie_metadata import router as movie_metadata_router
-from routes.movies import router as movie_router
-from routes.profiles import router as profiles_router
-from routes.shopping_carts import router as shopping_carts_router
+from app.routes.accounts import router as accounts_router
+from app.routes.movie_metadata import router as movie_metadata_router
+from app.routes.movies import router as movie_router
+from app.routes.profiles import router as profiles_router
+from app.routes.shopping_carts import router as shopping_carts_router
 
 app = FastAPI()
 

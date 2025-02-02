@@ -6,8 +6,8 @@ from sqlalchemy import Numeric, ForeignKey, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SQLAlchemyEnum
 
-from database.models.base import Base
-from database.models.movies import MovieModel
+from app.database.models.base import Base
+from app.database.models.movies import MovieModel
 
 
 class OrderStatusEnum(str, Enum):
@@ -29,9 +29,7 @@ class OrderModel(Base):
     status: Mapped[OrderStatusEnum] = mapped_column(
         SQLAlchemyEnum(OrderStatusEnum), nullable=False, default=OrderStatusEnum.PENDING
     )
-    total_amount: Mapped[Decimal] = mapped_column(
-        Numeric(10, 2), nullable=True
-    )
+    total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=True)
     payments: Mapped[list["PaymentModel"]] = relationship(
         "PaymentModel", back_populates="order", cascade="all, delete-orphan"
     )
@@ -49,6 +47,7 @@ class OrderItemModel(Base):
     )
     price_at_order: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
-    movie: Mapped[MovieModel] = relationship(
-        "MovieModel", back_populates="order_items"
+    movie: Mapped[MovieModel] = relationship("MovieModel", back_populates="order_items")
+    payment_items: Mapped[list["PaymentItemModel"]] = relationship(
+        "PaymentItemModel", back_populates="order_item", cascade="all, delete-orphan"
     )

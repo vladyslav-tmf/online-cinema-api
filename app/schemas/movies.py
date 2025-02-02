@@ -39,22 +39,31 @@ class MovieSchema(BaseModel):
     time: int
     imdb: float
     votes: int
-    meta_score: Optional[float]
-    gross: Optional[float]
+    meta_score: float | None = None
+    gross: float | None = None
     description: str
     price: float
     certification: CertificationSchema
-    genres: List[GenreSchema]
-    directors: List[DirectorSchema]
-    stars: List[StarSchema]
+    genres: list[GenreSchema]
+    directors: list[DirectorSchema]
+    stars: list[StarSchema]
+    likes_count: int = 0
+    dislikes_count: int = 0
+    comments_count: int = 0
+    favorites_count: int = 0
+    average_rating: float | None = None
+    is_liked_by_user: bool = False
+    is_disliked_by_user: bool = False
+    is_favorited_by_user: bool = False
+    user_rating: float | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class PaginationSchema(BaseModel):
-    movies: List[MovieSchema]
-    prev_page: Optional[str]
-    next_page: Optional[str]
+    movies: list[MovieSchema]
+    prev_page: str | None = None
+    next_page: str | None = None
     total_items: int
     total_pages: int
 
@@ -139,4 +148,3 @@ class StarUpdateSchema(BaseModel):
     name: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
-

@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from database.models.movies import MovieModel
 from database.models.orders import OrderStatusEnum
 from schemas.examples.orders import order_schema_example, order_item_schema_example
+from schemas.shopping_carts import CartItemSchema
 
 
 class OrderSchema(BaseModel):
@@ -26,8 +27,19 @@ class OrderSchema(BaseModel):
     }
 
 
+class OrderCreateSchema(BaseModel):
+    order_items: list[CartItemSchema]
+
+
+class OrderListResponseSchema(BaseModel):
+    orders = list["OrderItemSchema"]
+    prev_page: str | None
+    next_page: str | None
+    total_pages: int
+    total_items: int
+
+
 class OrderItemSchema(BaseModel):
-    id: int
     order_id: int
     movie_id: int
     price_at_order: Decimal

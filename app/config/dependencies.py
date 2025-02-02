@@ -8,6 +8,7 @@ from starlette import status
 from config.settings import BaseAppSettings, Settings, TestingSettings
 from database.models.accounts import UserModel
 from database.session import get_db
+from exceptions.security import InvalidTokenError, TokenExpiredError
 from notifications.emails import EmailSender
 from notifications.interfaces import EmailSenderInterface
 from security.interfaces import JWTAuthManagerInterface
@@ -72,7 +73,25 @@ def get_current_user(
     db: Session = Depends(get_db),
     jwt_manager: JWTAuthManagerInterface = Depends(get_jwt_auth_manager),
 ) -> UserModel | None:
-    payload = jwt_manager.decode_access_token(credentials.credentials)
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No authentication credentials provided",
+        )
+
+    try:
+        payload = jwt_manager.decode_access_token(credentials.credentials)
+    except TokenExpiredError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+        )
+    except InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+        )
+
     user = db.get(UserModel, payload["sub"])
     if not user or not user.is_active:
         raise HTTPException(

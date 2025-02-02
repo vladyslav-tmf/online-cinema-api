@@ -1,5 +1,4 @@
-from pydantic import BaseModel, ConfigDict
-from typing import List, Optional
+from pydantic import BaseModel, ConfigDict, Field
 from uuid import UUID
 
 
@@ -78,8 +77,8 @@ class MovieListItemSchema(BaseModel):
     time: int
     imdb: float
     votes: int
-    meta_score: Optional[float] = None
-    gross: Optional[float] = None
+    meta_score: float | None = None
+    gross: float | None = None
     description: str
     price: float
     certification_id: int
@@ -88,46 +87,43 @@ class MovieListItemSchema(BaseModel):
 
 
 class MovieListResponseSchema(BaseModel):
-    movies: List[MovieListItemSchema]
+    movies: list[MovieListItemSchema]
     total_count: int
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class MovieCreateSchema(BaseModel):
-    uuid: UUID
-    name: str
-    year: int
-    time: int
-    imdb: float
-    votes: int
-    meta_score: Optional[float]
-    gross: Optional[float]
-    description: str
-    price: float
+    name: str = Field(..., min_length=1, max_length=255)
+    year: int = Field(..., ge=1888, le=2100)
+    time: int = Field(..., ge=1)
+    imdb: float = Field(..., ge=0, le=10)
+    votes: int = Field(..., ge=0)
+    meta_score: float | None = Field(None, ge=0, le=100)
+    gross: float | None = None
+    description: str = Field(..., min_length=1)
+    price: float = Field(..., ge=0)
     certification_id: int
-    genres: List[int]
-    directors: List[int]
-    stars: List[int]
+    genre_ids: list[int]
+    director_ids: list[int]
+    star_ids: list[int]
 
     model_config = ConfigDict(from_attributes=True)
 
-class MovieUpdateSchema(BaseModel):
-    name: Optional[str]
-    year: Optional[int]
-    time: Optional[int]
-    imdb: Optional[float]
-    votes: Optional[int]
-    meta_score: Optional[float]
-    gross: Optional[float]
-    description: Optional[str]
-    price: Optional[float]
-    certification_id: Optional[int]
-    genres: Optional[List[int]]
-    directors: Optional[List[int]]
-    stars: Optional[List[int]]
-
-    model_config = ConfigDict(from_attributes=True)
+class MovieUpdateSchema(MovieCreateSchema):
+    name: str | None = Field(None, min_length=1, max_length=255)
+    year: int | None = Field(None, ge=1888, le=2100)
+    time: int | None = Field(None, ge=1)
+    imdb: float | None = Field(None, ge=0, le=10)
+    votes: int | None = Field(None, ge=0)
+    meta_score: float | None = Field(None, ge=0, le=100)
+    gross: float | None = None
+    description: str | None = Field(None, min_length=1)
+    price: float | None = Field(None, ge=0)
+    certification_id: int | None = None
+    genre_ids: list[int] | None = None
+    director_ids: list[int] | None = None
+    star_ids: list[int] | None = None
 
 class GenreCreateSchema(BaseModel):
     name: str
@@ -135,7 +131,7 @@ class GenreCreateSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class GenreUpdateSchema(BaseModel):
-    name: Optional[str]
+    name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -145,6 +141,6 @@ class StarCreateSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class StarUpdateSchema(BaseModel):
-    name: Optional[str]
+    name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)

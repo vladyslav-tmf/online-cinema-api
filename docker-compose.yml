@@ -1,0 +1,82 @@
+services:
+  db:
+    image: 'postgres:latest'
+    container_name: postgres_cinema_api
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_cinema_api_data:/var/lib/postgresql/data/
+    networks:
+      - cinema_api_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB -h 127.0.0.1 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_cinema_api
+    ports:
+      - "3333:80"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - pgadmin_cinema_api_data:/var/lib/pgadmin
+    networks:
+      - cinema_api_network
+
+  web:
+    restart: always
+    build: .
+    container_name: backend_cinema_api
+    command: [ "/bin/bash", "/commands/run_web_server_dev.sh" ]
+    env_file:
+      - .env
+    environment:
+      - LOG_LEVEL=debug
+      - PYTHONPATH=/app/fastapi
+      - WATCHFILES_FORCE_POLLING=true
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app:/app/fastapi
+    networks:
+      - cinema_api_network
+
+  migrator:
+    build: .
+    container_name: alembic_migrator_cinema_api
+    command: ["/bin/bash", "/commands/run_migration.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app:/app/fastapi
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app/fastapi
+    networks:
+      - cinema_api_network
+
+
+volumes:
+  postgres_cinema_api_data:
+    driver: local
+  pgadmin_cinema_api_data:
+    driver: local
+
+networks:
+  cinema_api_network:
+    driver: bridge

@@ -32,7 +32,7 @@ class OrderCreateSchema(BaseModel):
 
 
 class OrderListResponseSchema(BaseModel):
-    orders = list["OrderItemSchema"]
+    order = OrderSchema
     prev_page: str | None
     next_page: str | None
     total_pages: int

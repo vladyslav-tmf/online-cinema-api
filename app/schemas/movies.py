@@ -60,3 +60,83 @@ class PaginationSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class MovieListItemSchema(BaseModel):
+    id: int
+    uuid: str
+    name: str
+    year: int
+    time: int
+    imdb: float
+    votes: int
+    meta_score: Optional[float] = None
+    gross: Optional[float] = None
+    description: str
+    price: float
+    certification_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MovieListResponseSchema(BaseModel):
+    movies: List[MovieListItemSchema]
+    total_count: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MovieCreateSchema(BaseModel):
+    uuid: UUID
+    name: str
+    year: int
+    time: int
+    imdb: float
+    votes: int
+    meta_score: Optional[float]
+    gross: Optional[float]
+    description: str
+    price: float
+    certification_id: int
+    genres: List[int]
+    directors: List[int]
+    stars: List[int]
+
+    model_config = ConfigDict(from_attributes=True)
+
+class MovieUpdateSchema(BaseModel):
+    name: Optional[str]
+    year: Optional[int]
+    time: Optional[int]
+    imdb: Optional[float]
+    votes: Optional[int]
+    meta_score: Optional[float]
+    gross: Optional[float]
+    description: Optional[str]
+    price: Optional[float]
+    certification_id: Optional[int]
+    genres: Optional[List[int]]
+    directors: Optional[List[int]]
+    stars: Optional[List[int]]
+
+    model_config = ConfigDict(from_attributes=True)
+
+class GenreCreateSchema(BaseModel):
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+class GenreUpdateSchema(BaseModel):
+    name: Optional[str]
+
+    model_config = ConfigDict(from_attributes=True)
+
+class StarCreateSchema(BaseModel):
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+class StarUpdateSchema(BaseModel):
+    name: Optional[str]
+
+    model_config = ConfigDict(from_attributes=True)
+

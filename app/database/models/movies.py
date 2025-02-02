@@ -55,7 +55,7 @@ class GenreModel(Base):
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
     movies: Mapped[list["MovieModel"]] = relationship(
-        "MovieModel", secondary="movie_genres", back_populates="genres"
+        "MovieModel", secondary="movies_genres", back_populates="genres"
     )
 
 
@@ -66,7 +66,7 @@ class StarModel(Base):
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
     movies: Mapped[list["MovieModel"]] = relationship(
-        "MovieModel", secondary="movie_stars", back_populates="stars"
+        "MovieModel", secondary="movies_stars", back_populates="stars"
     )
 
 
@@ -77,7 +77,7 @@ class DirectorModel(Base):
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
     movies: Mapped[list["MovieModel"]] = relationship(
-        "MovieModel", secondary="movie_directors", back_populates="directors"
+        "MovieModel", secondary="movies_directors", back_populates="directors"
     )
 
 
@@ -114,7 +114,7 @@ class MovieModel(Base):
         "CertificationModel", back_populates="movies"
     )
     genres: Mapped[list[GenreModel]] = relationship(
-        "GenreModel", secondary="movie_genres", back_populates="movies"
+        "GenreModel", secondary="movies_genres", back_populates="movies"
     )
     directors: Mapped[list[DirectorModel]] = relationship(
         "DirectorModel", secondary="movies_directors", back_populates="movies"

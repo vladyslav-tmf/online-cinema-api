@@ -69,30 +69,6 @@ class PaginationSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class MovieListItemSchema(BaseModel):
-    id: int
-    uuid: str
-    name: str
-    year: int
-    time: int
-    imdb: float
-    votes: int
-    meta_score: float | None = None
-    gross: float | None = None
-    description: str
-    price: float
-    certification_id: int
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class MovieListResponseSchema(BaseModel):
-    movies: list[MovieListItemSchema]
-    total_count: int
-
-    model_config = ConfigDict(from_attributes=True)
-
-
 class MovieCreateSchema(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     year: int = Field(..., ge=1888, le=2100)
@@ -124,23 +100,3 @@ class MovieUpdateSchema(MovieCreateSchema):
     genre_ids: list[int] | None = None
     director_ids: list[int] | None = None
     star_ids: list[int] | None = None
-
-class GenreCreateSchema(BaseModel):
-    name: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-class GenreUpdateSchema(BaseModel):
-    name: str | None = None
-
-    model_config = ConfigDict(from_attributes=True)
-
-class StarCreateSchema(BaseModel):
-    name: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-class StarUpdateSchema(BaseModel):
-    name: str | None = None
-
-    model_config = ConfigDict(from_attributes=True)

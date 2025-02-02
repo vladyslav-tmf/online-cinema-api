@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SQLAlchemyEnum
 
 from database.models.base import Base
+from database.models.movies import MovieModel
 
 
 class OrderStatusEnum(str, Enum):
@@ -47,3 +48,7 @@ class OrderItemModel(Base):
         ForeignKey("movies.id", ondelete="CASCADE"), nullable=False
     )
     price_at_order: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+
+    movie: Mapped[MovieModel] = relationship(
+        "MovieModel", back_populates="order_items"
+    )

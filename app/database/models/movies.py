@@ -88,7 +88,7 @@ class CertificationModel(Base):
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
     movies: Mapped[list["MovieModel"]] = relationship(
-        "MovieModel", back_populates="certifications"
+        "MovieModel", back_populates="certification"
     )
 
 
@@ -110,7 +110,7 @@ class MovieModel(Base):
         Integer, ForeignKey("certifications.id"), nullable=False
     )
 
-    certification: Mapped[list[CertificationModel]] = relationship(
+    certification: Mapped[CertificationModel] = relationship(
         "CertificationModel", back_populates="movies"
     )
     genres: Mapped[list[GenreModel]] = relationship(
@@ -133,6 +133,12 @@ class MovieModel(Base):
     )
     ratings: Mapped[list["MovieRatingModel"]] = relationship(
         "MovieRatingModel", back_populates="movie", cascade="all, delete-orphan"
+    )
+    order_items: Mapped[list["OrderItemModel"]] = relationship(
+        "OrderItemModel", back_populates="movie", cascade="all, delete-orphan"
+    )
+    cart_items: Mapped[list["CartItemModel"]] = relationship(
+        "CartItemModel", back_populates="movie", cascade="all, delete-orphan"
     )
 
     __table_args__ = (UniqueConstraint("name", "year", "time"),)

@@ -114,6 +114,10 @@ class UserModel(Base):
         "MovieRatingModel", back_populates="user", cascade="all, delete-orphan"
     )
 
+    cart: Mapped[Optional["CartModel"]] = relationship(
+        "CartModel", back_populates="user", cascade="all, delete-orphan"
+    )
+
     def __repr__(self):
         return (
             f"<UserModel(id={self.id}, email={self.email}, is_active={self.is_active})>"

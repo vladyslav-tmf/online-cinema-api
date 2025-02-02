@@ -52,3 +52,6 @@ class OrderItemModel(Base):
     movie: Mapped[MovieModel] = relationship(
         "MovieModel", back_populates="order_items"
     )
+    payment_items: Mapped[list["PaymentItemModel"]] = relationship(
+        "PaymentItemModel", back_populates="order_item", cascade="all, delete-orphan"
+    )

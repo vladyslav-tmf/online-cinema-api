@@ -1,5 +1,4 @@
-from pydantic import BaseModel, ConfigDict
-from typing import List, Optional
+from pydantic import BaseModel, ConfigDict, Field
 from uuid import UUID
 
 
@@ -39,104 +38,66 @@ class MovieSchema(BaseModel):
     time: int
     imdb: float
     votes: int
-    meta_score: Optional[float]
-    gross: Optional[float]
+    meta_score: float | None = None
+    gross: float | None = None
     description: str
     price: float
     certification: CertificationSchema
-    genres: List[GenreSchema]
-    directors: List[DirectorSchema]
-    stars: List[StarSchema]
+    genres: list[GenreSchema]
+    directors: list[DirectorSchema]
+    stars: list[StarSchema]
+    likes_count: int = 0
+    dislikes_count: int = 0
+    comments_count: int = 0
+    favorites_count: int = 0
+    average_rating: float | None = None
+    is_liked_by_user: bool = False
+    is_disliked_by_user: bool = False
+    is_favorited_by_user: bool = False
+    user_rating: float | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class PaginationSchema(BaseModel):
-    movies: List[MovieSchema]
-    prev_page: Optional[str]
-    next_page: Optional[str]
+    movies: list[MovieSchema]
+    prev_page: str | None = None
+    next_page: str | None = None
     total_items: int
     total_pages: int
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class MovieListItemSchema(BaseModel):
-    id: int
-    uuid: str
-    name: str
-    year: int
-    time: int
-    imdb: float
-    votes: int
-    meta_score: Optional[float] = None
-    gross: Optional[float] = None
-    description: str
-    price: float
-    certification_id: int
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class MovieListResponseSchema(BaseModel):
-    movies: List[MovieListItemSchema]
-    total_count: int
-
-    model_config = ConfigDict(from_attributes=True)
-
-
 class MovieCreateSchema(BaseModel):
-    uuid: UUID
-    name: str
-    year: int
-    time: int
-    imdb: float
-    votes: int
-    meta_score: Optional[float]
-    gross: Optional[float]
-    description: str
-    price: float
+    name: str = Field(..., min_length=1, max_length=255)
+    year: int = Field(..., ge=1888, le=2100)
+    time: int = Field(..., ge=1)
+    imdb: float = Field(..., ge=0, le=10)
+    votes: int = Field(..., ge=0)
+    meta_score: float | None = Field(None, ge=0, le=100)
+    gross: float | None = None
+    description: str = Field(..., min_length=1)
+    price: float = Field(..., ge=0)
     certification_id: int
-    genres: List[int]
-    directors: List[int]
-    stars: List[int]
+    genre_ids: list[int]
+    director_ids: list[int]
+    star_ids: list[int]
 
     model_config = ConfigDict(from_attributes=True)
 
-class MovieUpdateSchema(BaseModel):
-    name: Optional[str]
-    year: Optional[int]
-    time: Optional[int]
-    imdb: Optional[float]
-    votes: Optional[int]
-    meta_score: Optional[float]
-    gross: Optional[float]
-    description: Optional[str]
-    price: Optional[float]
-    certification_id: Optional[int]
-    genres: Optional[List[int]]
-    directors: Optional[List[int]]
-    stars: Optional[List[int]]
 
-    model_config = ConfigDict(from_attributes=True)
-
-class GenreCreateSchema(BaseModel):
-    name: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-class GenreUpdateSchema(BaseModel):
-    name: Optional[str]
-
-    model_config = ConfigDict(from_attributes=True)
-
-class StarCreateSchema(BaseModel):
-    name: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-class StarUpdateSchema(BaseModel):
-    name: Optional[str]
-
-    model_config = ConfigDict(from_attributes=True)
-
+class MovieUpdateSchema(MovieCreateSchema):
+    name: str | None = Field(None, min_length=1, max_length=255)
+    year: int | None = Field(None, ge=1888, le=2100)
+    time: int | None = Field(None, ge=1)
+    imdb: float | None = Field(None, ge=0, le=10)
+    votes: int | None = Field(None, ge=0)
+    meta_score: float | None = Field(None, ge=0, le=100)
+    gross: float | None = None
+    description: str | None = Field(None, min_length=1)
+    price: float | None = Field(None, ge=0)
+    certification_id: int | None = None
+    genre_ids: list[int] | None = None
+    director_ids: list[int] | None = None
+    star_ids: list[int] | None = None

@@ -1,14 +1,14 @@
 import os
 
 from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 from starlette import status
 
 from config.settings import BaseAppSettings, Settings, TestingSettings
 from database.models.accounts import UserModel
 from database.session import get_db
+from exceptions.security import InvalidTokenError, TokenExpiredError
 from notifications.emails import EmailSender
 from notifications.interfaces import EmailSenderInterface
 from security.interfaces import JWTAuthManagerInterface
@@ -16,17 +16,8 @@ from security.token_manager import JWTAuthManager
 from storages.interfaces import S3StorageInterface
 from storages.s3 import S3StorageClient
 
-from dotenv import load_dotenv
+security = HTTPBearer()
 
-load_dotenv()
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-if not SECRET_KEY:
-    raise ValueError("No SECRET_KEY set for JWT authentication")
-
-ALGORITHM = "HS256"
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def get_settings() -> BaseAppSettings:
     environment = os.getenv("ENVIRONMENT", "developing")
@@ -77,20 +68,34 @@ def get_s3_storage_client(
     )
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+    jwt_manager: JWTAuthManagerInterface = Depends(get_jwt_auth_manager),
+) -> UserModel | None:
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No authentication credentials provided",
+        )
+
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-    user = db.query(UserModel).filter(UserModel.username == username).first()
-    if user is None:
-        raise credentials_exception
+        payload = jwt_manager.decode_access_token(credentials.credentials)
+    except TokenExpiredError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+        )
+    except InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+        )
+
+    user = db.get(UserModel, payload["sub"])
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
     return user

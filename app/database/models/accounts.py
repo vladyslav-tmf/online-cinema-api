@@ -94,6 +94,26 @@ class UserModel(Base):
         "PaymentModel", back_populates="user", cascade="all, delete-orphan"
     )
 
+    movie_likes: Mapped[list["MovieLikeModel"]] = relationship(
+        "MovieLikeModel", back_populates="user", cascade="all, delete-orphan"
+    )
+
+    movie_comments: Mapped[list["MovieCommentModel"]] = relationship(
+        "MovieCommentModel", back_populates="user", cascade="all, delete-orphan"
+    )
+
+    comment_likes: Mapped[list["CommentLikeModel"]] = relationship(
+        "CommentLikeModel", back_populates="user", cascade="all, delete-orphan"
+    )
+
+    favorite_movies: Mapped[list["MovieFavoriteModel"]] = relationship(
+        "MovieFavoriteModel", back_populates="user", cascade="all, delete-orphan"
+    )
+
+    movie_ratings: Mapped[list["MovieRatingModel"]] = relationship(
+        "MovieRatingModel", back_populates="user", cascade="all, delete-orphan"
+    )
+
     def __repr__(self):
         return (
             f"<UserModel(id={self.id}, email={self.email}, is_active={self.is_active})>"

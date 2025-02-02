@@ -11,21 +11,39 @@ from app.database.models.movies import (
 )
 from app.database.session import get_db
 from app.schemas.movies import (
-    GenreCreateSchema,
-    GenreSchema,
-    GenreUpdateSchema,
     MovieCreateSchema,
     MovieSchema,
     MovieUpdateSchema,
     PaginationSchema,
-    StarCreateSchema,
-    StarSchema,
-    StarUpdateSchema,
 )
 from config.dependencies import get_current_user
 from database.models.accounts import UserGroupEnum, UserModel
-from database.models.movie_interactions import LikeTypeEnum
-from exceptions.movies import MovieNotFoundError
+from database.models.movie_interactions import (
+    CommentLikeModel,
+    LikeTypeEnum,
+    MovieCommentModel,
+    MovieFavoriteModel,
+    MovieLikeModel,
+    MovieRatingModel,
+)
+from exceptions.movies import (
+    CommentAlreadyLikedError,
+    CommentNotFoundError,
+    MovieAlreadyFavoritedError,
+    MovieAlreadyLikedError,
+    MovieAlreadyRatedError,
+    MovieNotFoundError,
+)
+from schemas.movie_interactions import (
+    CommentLikeResponseSchema,
+    MovieCommentCreateSchema,
+    MovieCommentResponseSchema,
+    MovieFavoriteResponseSchema,
+    MovieLikeCreateSchema,
+    MovieLikeResponseSchema,
+    MovieRatingCreateSchema,
+    MovieRatingResponseSchema,
+)
 
 router = APIRouter()
 
@@ -420,3 +438,281 @@ def delete_movie(
     db.delete(movie)
     db.commit()
     return {"message": "Movie deleted successfully"}
+
+
+@router.post("/{movie_id}/like", response_model=MovieLikeResponseSchema)
+def like_movie(
+    movie_id: int,
+    like_data: MovieLikeCreateSchema,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    movie = db.get(MovieModel, movie_id)
+    if not movie:
+        raise MovieNotFoundError()
+
+    existing_like = (
+        db.query(MovieLikeModel)
+        .filter(
+            MovieLikeModel.movie_id == movie_id,
+            MovieLikeModel.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if existing_like:
+        if existing_like.like_type == like_data.like_type:
+            raise MovieAlreadyLikedError()
+        db.delete(existing_like)
+        db.commit()
+
+    like = MovieLikeModel(
+        user_id=current_user.id,
+        movie_id=movie_id,
+        like_type=like_data.like_type,
+    )
+    db.add(like)
+    db.commit()
+    db.refresh(like)
+    return like
+
+
+@router.delete("/{movie_id}/like", status_code=status.HTTP_204_NO_CONTENT)
+def remove_movie_like(
+    movie_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    like = (
+        db.query(MovieLikeModel)
+        .filter(
+            MovieLikeModel.movie_id == movie_id,
+            MovieLikeModel.user_id == current_user.id,
+        )
+        .first()
+    )
+    if like:
+        db.delete(like)
+        db.commit()
+
+
+@router.post("/{movie_id}/favorite", response_model=MovieFavoriteResponseSchema)
+def add_to_favorites(
+    movie_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    movie = db.get(MovieModel, movie_id)
+    if not movie:
+        raise MovieNotFoundError()
+
+    existing_favorite = (
+        db.query(MovieFavoriteModel)
+        .filter(
+            MovieFavoriteModel.movie_id == movie_id,
+            MovieFavoriteModel.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if existing_favorite:
+        raise MovieAlreadyFavoritedError()
+
+    favorite = MovieFavoriteModel(
+        user_id=current_user.id,
+        movie_id=movie_id,
+    )
+    db.add(favorite)
+    db.commit()
+    db.refresh(favorite)
+    return favorite
+
+
+@router.delete("/{movie_id}/favorite", status_code=status.HTTP_204_NO_CONTENT)
+def remove_from_favorites(
+    movie_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    favorite = (
+        db.query(MovieFavoriteModel)
+        .filter(
+            MovieFavoriteModel.movie_id == movie_id,
+            MovieFavoriteModel.user_id == current_user.id,
+        )
+        .first()
+    )
+    if favorite:
+        db.delete(favorite)
+        db.commit()
+
+
+@router.post("/{movie_id}/rating", response_model=MovieRatingResponseSchema)
+def rate_movie(
+    movie_id: int,
+    rating_data: MovieRatingCreateSchema,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    movie = db.get(MovieModel, movie_id)
+    if not movie:
+        raise MovieNotFoundError()
+
+    existing_rating = (
+        db.query(MovieRatingModel)
+        .filter(
+            MovieRatingModel.movie_id == movie_id,
+            MovieRatingModel.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if existing_rating:
+        raise MovieAlreadyRatedError()
+
+    rating = MovieRatingModel(
+        user_id=current_user.id,
+        movie_id=movie_id,
+        rating=rating_data.rating,
+    )
+    db.add(rating)
+    db.commit()
+    db.refresh(rating)
+    return rating
+
+
+@router.delete("/{movie_id}/rating", status_code=status.HTTP_204_NO_CONTENT)
+def remove_movie_rating(
+    movie_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    rating = (
+        db.query(MovieRatingModel)
+        .filter(
+            MovieRatingModel.movie_id == movie_id,
+            MovieRatingModel.user_id == current_user.id,
+        )
+        .first()
+    )
+    if rating:
+        db.delete(rating)
+        db.commit()
+
+
+@router.post("/{movie_id}/comments", response_model=MovieCommentResponseSchema)
+def create_comment(
+    movie_id: int,
+    comment_data: MovieCommentCreateSchema,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    movie = db.get(MovieModel, movie_id)
+    if not movie:
+        raise MovieNotFoundError()
+
+    if comment_data.parent_id:
+        parent_comment = db.get(MovieCommentModel, comment_data.parent_id)
+        if not parent_comment or parent_comment.movie_id != movie_id:
+            raise CommentNotFoundError()
+
+    comment = MovieCommentModel(
+        user_id=current_user.id,
+        movie_id=movie_id,
+        parent_id=comment_data.parent_id,
+        text=comment_data.text,
+    )
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+
+    comment.likes_count = 0
+    comment.is_liked_by_user = False
+
+    return comment
+
+
+@router.get("/{movie_id}/comments", response_model=list[MovieCommentResponseSchema])
+def get_movie_comments(
+    movie_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    movie = db.get(MovieModel, movie_id)
+    if not movie:
+        raise MovieNotFoundError()
+
+    comments = (
+        db.query(MovieCommentModel).filter(MovieCommentModel.movie_id == movie_id).all()
+    )
+
+    for comment in comments:
+        comment.likes_count = len(comment.likes)
+        comment.is_liked_by_user = any(
+            like.user_id == current_user.id for like in comment.likes
+        )
+
+    return comments
+
+
+@router.post(
+    "/{movie_id}/comments/{comment_id}/like",
+    response_model=CommentLikeResponseSchema,
+)
+def like_comment(
+    movie_id: int,
+    comment_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    comment = db.get(MovieCommentModel, comment_id)
+    if not comment or comment.movie_id != movie_id:
+        raise CommentNotFoundError()
+
+    existing_like = (
+        db.query(CommentLikeModel)
+        .filter(
+            CommentLikeModel.comment_id == comment_id,
+            CommentLikeModel.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if existing_like:
+        raise CommentAlreadyLikedError()
+
+    like = CommentLikeModel(
+        user_id=current_user.id,
+        comment_id=comment_id,
+    )
+    db.add(like)
+    db.commit()
+    db.refresh(like)
+    return like
+
+
+@router.delete(
+    "/{movie_id}/comments/{comment_id}/like",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def remove_comment_like(
+    movie_id: int,
+    comment_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    comment = db.get(MovieCommentModel, comment_id)
+    if not comment or comment.movie_id != movie_id:
+        raise CommentNotFoundError()
+
+    like = (
+        db.query(CommentLikeModel)
+        .filter(
+            CommentLikeModel.comment_id == comment_id,
+            CommentLikeModel.user_id == current_user.id,
+        )
+        .first()
+    )
+    if like:
+        db.delete(like)
+        db.commit()

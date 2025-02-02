@@ -26,14 +26,6 @@ from database.models.movie_interactions import (
     MovieLikeModel,
     MovieRatingModel,
 )
-from exceptions.movies import (
-    CommentAlreadyLikedError,
-    CommentNotFoundError,
-    MovieAlreadyFavoritedError,
-    MovieAlreadyLikedError,
-    MovieAlreadyRatedError,
-    MovieNotFoundError,
-)
 from schemas.movie_interactions import (
     CommentLikeResponseSchema,
     MovieCommentCreateSchema,
@@ -216,7 +208,9 @@ def get_movie(
     )
 
     if not movie:
-        raise MovieNotFoundError()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
+        )
 
     if current_user:
         movie.likes_count = sum(
@@ -360,7 +354,9 @@ def update_movie(
 
     movie = db.get(MovieModel, movie_id)
     if not movie:
-        raise MovieNotFoundError()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
+        )
 
     if not movie_data.certification_id:
         certification = (
@@ -434,7 +430,9 @@ def delete_movie(
 
     movie = db.get(MovieModel, movie_id)
     if not movie:
-        raise MovieNotFoundError()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
+        )
 
     db.delete(movie)
     db.commit()
@@ -450,7 +448,9 @@ def like_movie(
 ):
     movie = db.get(MovieModel, movie_id)
     if not movie:
-        raise MovieNotFoundError()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
+        )
 
     existing_like = (
         db.query(MovieLikeModel)
@@ -463,7 +463,10 @@ def like_movie(
 
     if existing_like:
         if existing_like.like_type == like_data.like_type:
-            raise MovieAlreadyLikedError()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You have already liked/disliked this movie",
+            )
         db.delete(existing_like)
         db.commit()
 
@@ -505,7 +508,9 @@ def add_to_favorites(
 ):
     movie = db.get(MovieModel, movie_id)
     if not movie:
-        raise MovieNotFoundError()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
+        )
 
     existing_favorite = (
         db.query(MovieFavoriteModel)
@@ -517,7 +522,10 @@ def add_to_favorites(
     )
 
     if existing_favorite:
-        raise MovieAlreadyFavoritedError()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Movie is already in favorites",
+        )
 
     favorite = MovieFavoriteModel(
         user_id=current_user.id,
@@ -557,7 +565,9 @@ def rate_movie(
 ):
     movie = db.get(MovieModel, movie_id)
     if not movie:
-        raise MovieNotFoundError()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
+        )
 
     existing_rating = (
         db.query(MovieRatingModel)
@@ -569,7 +579,10 @@ def rate_movie(
     )
 
     if existing_rating:
-        raise MovieAlreadyRatedError()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You have already rated this movie",
+        )
 
     rating = MovieRatingModel(
         user_id=current_user.id,
@@ -610,12 +623,16 @@ def create_comment(
 ):
     movie = db.get(MovieModel, movie_id)
     if not movie:
-        raise MovieNotFoundError()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
+        )
 
     if comment_data.parent_id:
         parent_comment = db.get(MovieCommentModel, comment_data.parent_id)
         if not parent_comment or parent_comment.movie_id != movie_id:
-            raise CommentNotFoundError()
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Parent comment not found"
+            )
 
     comment = MovieCommentModel(
         user_id=current_user.id,
@@ -641,7 +658,9 @@ def get_movie_comments(
 ):
     movie = db.get(MovieModel, movie_id)
     if not movie:
-        raise MovieNotFoundError()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
+        )
 
     comments = (
         db.query(MovieCommentModel).filter(MovieCommentModel.movie_id == movie_id).all()
@@ -668,7 +687,9 @@ def like_comment(
 ):
     comment = db.get(MovieCommentModel, comment_id)
     if not comment or comment.movie_id != movie_id:
-        raise CommentNotFoundError()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
+        )
 
     existing_like = (
         db.query(CommentLikeModel)
@@ -680,7 +701,10 @@ def like_comment(
     )
 
     if existing_like:
-        raise CommentAlreadyLikedError()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You have already liked this comment",
+        )
 
     like = CommentLikeModel(
         user_id=current_user.id,
@@ -704,7 +728,9 @@ def remove_comment_like(
 ):
     comment = db.get(MovieCommentModel, comment_id)
     if not comment or comment.movie_id != movie_id:
-        raise CommentNotFoundError()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
+        )
 
     like = (
         db.query(CommentLikeModel)

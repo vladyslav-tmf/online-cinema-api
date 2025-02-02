@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from database.models.movie_interactions import LikeTypeEnum
+from app.database.models.movie_interactions import LikeTypeEnum
 
 
 class BaseLikeSchema(BaseModel):

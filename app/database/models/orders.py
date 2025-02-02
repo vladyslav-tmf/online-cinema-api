@@ -6,8 +6,8 @@ from sqlalchemy import Numeric, ForeignKey, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SQLAlchemyEnum
 
-from database.models.base import Base
-from database.models.movies import MovieModel
+from app.database.models.base import Base
+from app.database.models.movies import MovieModel
 
 
 class OrderStatusEnum(str, Enum):

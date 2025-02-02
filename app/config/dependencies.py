@@ -1,29 +1,20 @@
-import os
-
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 from starlette import status
 
-from config.settings import BaseAppSettings, Settings, TestingSettings
-from database.models.accounts import UserModel
-from database.session import get_db
-from exceptions.security import InvalidTokenError, TokenExpiredError
-from notifications.emails import EmailSender
-from notifications.interfaces import EmailSenderInterface
-from security.interfaces import JWTAuthManagerInterface
-from security.token_manager import JWTAuthManager
-from storages.interfaces import S3StorageInterface
-from storages.s3 import S3StorageClient
+from app.config.settings import BaseAppSettings, get_settings
+from app.database.models.accounts import UserModel
+from app.database.session import get_db
+from app.exceptions.security import InvalidTokenError, TokenExpiredError
+from app.notifications.emails import EmailSender
+from app.notifications.interfaces import EmailSenderInterface
+from app.security.interfaces import JWTAuthManagerInterface
+from app.security.token_manager import JWTAuthManager
+from app.storages.interfaces import S3StorageInterface
+from app.storages.s3 import S3StorageClient
 
 security = HTTPBearer()
-
-
-def get_settings() -> BaseAppSettings:
-    environment = os.getenv("ENVIRONMENT", "developing")
-    if environment == "testing":
-        return TestingSettings()
-    return Settings()
 
 
 def get_jwt_auth_manager(

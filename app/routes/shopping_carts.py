@@ -3,14 +3,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 from starlette import status
 
-from config.dependencies import get_current_user
-from database.models.accounts import UserModel
-from database.models.movies import MovieModel
-from database.models.orders import OrderItemModel, OrderModel
-from database.models.payments import PaymentModel, PaymentStatusEnum
-from database.models.shopping_carts import CartItemModel, CartModel
-from database.session import get_db
-from schemas.shopping_carts import (
+from app.config.dependencies import get_current_user
+from app.database.models.accounts import UserModel
+from app.database.models.movies import MovieModel
+from app.database.models.orders import OrderItemModel, OrderModel
+from app.database.models.payments import PaymentModel, PaymentStatusEnum
+from app.database.models.shopping_carts import CartItemModel, CartModel
+from app.database.session import get_db
+from app.schemas.shopping_carts import (
     CartItemCreateSchema,
     CartItemResponseSchema,
     CartResponseSchema,

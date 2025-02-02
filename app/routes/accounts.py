@@ -5,13 +5,13 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from config.dependencies import (
+from app.config.dependencies import (
     get_accounts_email_notificator,
     get_jwt_auth_manager,
     get_settings,
 )
-from config.settings import BaseAppSettings
-from database.models.accounts import (
+from app.config.settings import BaseAppSettings
+from app.database.models.accounts import (
     ActivationTokenModel,
     PasswordResetTokenModel,
     RefreshTokenModel,
@@ -19,10 +19,10 @@ from database.models.accounts import (
     UserGroupModel,
     UserModel,
 )
-from database.session import get_db
-from exceptions.security import BaseSecurityError
-from notifications.interfaces import EmailSenderInterface
-from schemas.accounts import (
+from app.database.session import get_db
+from app.exceptions.security import BaseSecurityError
+from app.notifications.interfaces import EmailSenderInterface
+from app.schemas.accounts import (
     MessageResponseSchema,
     PasswordResetCompleteRequestSchema,
     PasswordResetRequestSchema,
@@ -34,7 +34,7 @@ from schemas.accounts import (
     UserRegistrationRequestSchema,
     UserRegistrationResponseSchema,
 )
-from security.interfaces import JWTAuthManagerInterface
+from app.security.interfaces import JWTAuthManagerInterface
 
 router = APIRouter()
 

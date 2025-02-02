@@ -1,27 +1,39 @@
-import datetime
-from pydantic import BaseModel
+from datetime import datetime
+from decimal import Decimal
 
-from app.database.models.accounts import UserModel
-from app.database.models.shopping_carts import CartItemModel
+from pydantic import BaseModel, ConfigDict
 
-
-class CartSchema(BaseModel):
-    id: int
-    user_id: int
-    user: UserModel
-    cart_items: list[CartItemModel]
-
-    model_config = {
-        "from_attributes": True
-    }
+from schemas.movies import MovieSchema
 
 
-class CartItemSchema(BaseModel):
+class CartItemBaseSchema(BaseModel):
+    movie_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CartItemCreateSchema(CartItemBaseSchema):
+    pass
+
+
+class CartItemResponseSchema(CartItemBaseSchema):
     id: int
     cart_id: int
-    movie_id: int
     added_at: datetime
+    movie: MovieSchema
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CartBaseSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CartResponseSchema(CartBaseSchema):
+    id: int
+    user_id: int
+    cart_items: list[CartItemResponseSchema]
+
+    @property
+    def total_price(self) -> Decimal:
+        return Decimal(sum(item.movie.price for item in self.cart_items))

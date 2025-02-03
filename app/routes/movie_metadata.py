@@ -20,12 +20,34 @@ from app.schemas.movies import (
 router = APIRouter()
 
 
-@router.get("/certifications/", response_model=list[CertificationSchema])
+@router.get("/certifications/", response_model=list[CertificationSchema],
+            summary="Get all certifications",
+            description="This endpoint returns a list of all certifications.",
+            responses={
+                200: {
+                    "description": "List of certifications retrieved successfully."
+                }
+            }
+            )
 def get_certifications(db: Session = Depends(get_db)):
     return db.query(CertificationModel).all()
 
 
-@router.post("/certifications/", response_model=CertificationSchema)
+@router.post("/certifications/", response_model=CertificationSchema,
+             summary="Create a certification",
+             description="This endpoint allows administrators to create a new certification.",
+             responses={
+                 201: {
+                     "description": "Certification created successfully."
+                 },
+                 400: {
+                     "description": "Certification with this name already exists."
+                 },
+                 403: {
+                     "description": "Only administrators can create certifications."
+                 }
+             }
+             )
 def create_certification(
     name: str,
     db: Session = Depends(get_db),
@@ -50,12 +72,34 @@ def create_certification(
     return certification
 
 
-@router.get("/genres/", response_model=list[GenreSchema])
+@router.get("/genres/", response_model=list[GenreSchema],
+            summary="Get all genres",
+            description="This endpoint returns a list of all genres.",
+            responses={
+                200: {
+                    "description": "List of genres retrieved successfully."
+                }
+            }
+            )
 def get_genres(db: Session = Depends(get_db)):
     return db.query(GenreModel).all()
 
 
-@router.post("/genres/", response_model=GenreSchema, summary="Create a new genre")
+@router.post("/genres/", response_model=GenreSchema,
+             summary="Create a new genre",
+             description="This endpoint allows administrators to create a new genre.",
+             responses={
+                 201: {
+                     "description": "Genre created successfully."
+                 },
+                 400: {
+                     "description": "Genre with this name already exists."
+                 },
+                 403: {
+                     "description": "Only administrators can create genres."
+                 }
+             }
+             )
 def create_genre(
     name: str,
     db: Session = Depends(get_db),
@@ -80,7 +124,21 @@ def create_genre(
     return new_genre
 
 
-@router.put("/genres/{genre_id}", response_model=GenreSchema, summary="Update a genre")
+@router.put("/genres/{genre_id}", response_model=GenreSchema,
+            summary="Update a genre",
+            description="This endpoint allows administrators to update an existing genre.",
+            responses={
+                200: {
+                    "description": "Genre updated successfully."
+                },
+                403: {
+                    "description": "Only administrators can update genres."
+                },
+                404: {
+                    "description": "Genre not found."
+                }
+            }
+            )
 def update_genre(
     genre_id: int,
     name: str,

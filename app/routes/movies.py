@@ -186,7 +186,27 @@ def get_movies(
     )
 
 
-@router.get("/{movie_id}", response_model=MovieSchema)
+@router.get("/{movie_id}", response_model=MovieSchema,
+            summary="Retrieve a specific movie by its ID",
+            description=(
+                    "<h3>Fetches details of a specific movie by its unique ID.</h3>"
+                    "<p>This endpoint returns detailed information about the movie, "
+                    "including its title, release year, genres, directors, actors, and ratings.</p>"
+                    "<p>If the movie is not found, a 404 error is returned.</p>"
+            ),
+            responses={
+                status.HTTP_200_OK: {
+                    "description": "Movie details retrieved successfully.",
+                },
+                status.HTTP_404_NOT_FOUND: {
+                    "description": "Movie not found.",
+                    "content": {
+                        "application/json": {
+                            "example": {"detail": "Movie not found."}}
+                    },
+                },
+            },
+            )
 def get_movie(
     movie_id: int,
     db: Session = Depends(get_db),

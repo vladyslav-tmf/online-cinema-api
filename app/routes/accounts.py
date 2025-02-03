@@ -152,8 +152,14 @@ def activate_account_by_id(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
-    user.is_active = True
 
+    if user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User account is already active.",
+        )
+
+    user.is_active = True
     db.commit()
 
     return MessageResponseSchema(message="User account activated successfully.")

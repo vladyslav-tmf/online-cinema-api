@@ -32,7 +32,6 @@ max-line-length = 88
 ignore = "F821, W503"
 max-complexity = 18
 exclude = ".venv,venv,migrations"
-count = true
 
 
 [build-system]

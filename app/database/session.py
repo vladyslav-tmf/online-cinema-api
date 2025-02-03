@@ -7,8 +7,11 @@ from app.config.settings import get_settings
 
 settings = get_settings()
 
-DATABASE_URL = f"sqlite:///{settings.PATH_TO_DB}"
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+DATABASE_URL = (
+    f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@"
+    f"{settings.POSTGRES_HOST}:{settings.POSTGRES_DB_PORT}/{settings.POSTGRES_DB}"
+)
+engine = create_engine(DATABASE_URL)
 connection = engine.connect()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=connection)
 

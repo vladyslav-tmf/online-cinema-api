@@ -163,12 +163,34 @@ def update_genre(
     return existing_genre
 
 
-@router.get("/directors/", response_model=list[DirectorSchema])
+@router.get("/directors/", response_model=list[DirectorSchema],
+            summary="Get all directors",
+            description="This endpoint retrieves all directors from the database.",
+            responses={
+                200: {
+                    "description": "List of directors retrieved successfully."
+                }
+            }
+            )
 def get_directors(db: Session = Depends(get_db)):
     return db.query(DirectorModel).all()
 
 
-@router.post("/directors/", response_model=DirectorSchema)
+@router.post("/directors/", response_model=DirectorSchema,
+             summary="Create a new director",
+             description="This endpoint allows administrators to create a new director.",
+             responses={
+                 201: {
+                     "description": "Director created successfully."
+                 },
+                 400: {
+                     "description": "Director with this name already exists."
+                 },
+                 403: {
+                     "description": "Only administrators can create directors."
+                 }
+             }
+             )
 def create_director(
     name: str,
     db: Session = Depends(get_db),
@@ -193,7 +215,15 @@ def create_director(
     return director
 
 
-@router.get("/stars/", response_model=list[StarSchema])
+@router.get("/stars/", response_model=list[StarSchema],
+            summary="Get all stars",
+            description="This endpoint retrieves all stars from the database.",
+            responses={
+                200: {
+                    "description": "List of stars retrieved successfully."
+                }
+            }
+            )
 def get_stars(db: Session = Depends(get_db)):
     return db.query(StarModel).all()
 
@@ -203,6 +233,18 @@ def get_stars(db: Session = Depends(get_db)):
     response_model=StarSchema,
     summary="Create a new actor",
     status_code=status.HTTP_201_CREATED,
+    description="This endpoint allows administrators to create a new actor.",
+    responses={
+        201: {
+            "description": "Actor created successfully."
+        },
+        400: {
+            "description": "Star with this name already exists."
+        },
+        403: {
+            "description": "Only administrators can create stars."
+        }
+    }
 )
 def create_star(
     name: str,
@@ -228,7 +270,24 @@ def create_star(
     return new_star
 
 
-@router.put("/stars/{star_id}", response_model=StarSchema, summary="Update an actor")
+@router.put("/stars/{star_id}", response_model=StarSchema,
+            summary="Update an actor",
+            description="This endpoint allows administrators to update an existing actor's details.",
+            responses={
+                200: {
+                    "description": "Actor updated successfully."
+                },
+                400: {
+                    "description": "Invalid input data."
+                },
+                403: {
+                    "description": "Only administrators can update stars."
+                },
+                404: {
+                    "description": "Actor not found."
+                }
+            }
+            )
 def update_star(
     star_id: int,
     name: str,

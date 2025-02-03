@@ -118,6 +118,23 @@ services:
     networks:
       - cinema_api_network
 
+  mailhog:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./docker/mailhog/Dockerfile
+    container_name: mailhog_cinema_api
+    command: [ "/bin/bash", "-c", "/commands/setup_mailhog_auth.sh && ~/go/bin/MailHog" ]
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    env_file:
+      - .env
+    environment:
+      MH_AUTH_FILE: /mailhog.auth
+    networks:
+      - cinema_api_network
+
 volumes:
   postgres_cinema_api_data:
     driver: local

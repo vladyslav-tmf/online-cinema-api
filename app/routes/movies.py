@@ -556,7 +556,15 @@ def like_movie(
     return like
 
 
-@router.delete("/{movie_id}/like", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{movie_id}/like", status_code=status.HTTP_204_NO_CONTENT,
+               summary="Remove like or dislike from a movie",
+               description="Removes an authenticated user's like or dislike from a movie.",
+               responses={
+                   204: {
+                       "description": "Like/dislike successfully removed",
+                   },
+               },
+               )
 def remove_movie_like(
     movie_id: int,
     db: Session = Depends(get_db),

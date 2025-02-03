@@ -21,6 +21,7 @@ class BaseAppSettings(BaseSettings):
     ACTIVATION_COMPLETE_EMAIL_TEMPLATE_NAME: str = "activation_complete.html"
     PASSWORD_RESET_TEMPLATE_NAME: str = "password_reset_request.html"
     PASSWORD_RESET_COMPLETE_TEMPLATE_NAME: str = "password_reset_complete.html"
+    PAYMENT_SUCCESS_EMAIL_TEMPLATE_NAME: str = "payment_success.html"
 
     LOGIN_TIME_DAYS: int = 7
 
@@ -60,7 +61,7 @@ class TestingSettings(BaseAppSettings):
     JWT_SIGNING_ALGORITHM: str = "HS256"
 
     def model_post_init(self, __context: dict[str, Any] | None = None) -> None:
-        object.__setattr__(self, 'PATH_TO_DB', ":memory:")
+        object.__setattr__(self, "PATH_TO_DB", ":memory:")
 
 
 def get_settings() -> BaseAppSettings:

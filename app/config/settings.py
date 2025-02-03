@@ -2,7 +2,10 @@ import os
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
+
+load_dotenv()
 
 
 class BaseAppSettings(BaseSettings):

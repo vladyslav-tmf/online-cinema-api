@@ -4,20 +4,16 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import HttpUrl
 from sqlalchemy.orm import Session
 
-from app.config.dependencies import get_jwt_auth_manager, get_s3_storage_client
+from app.config.dependencies import get_current_user, get_s3_storage_client
 from app.database.models.accounts import (
     GenderEnum,
     UserGroupEnum,
-    UserGroupModel,
     UserModel,
     UserProfileModel,
 )
 from app.database.session import get_db
-from app.exceptions.security import BaseSecurityError
 from app.exceptions.storage import S3FileUploadError
 from app.schemas.profiles import ProfileCreateSchema, ProfileResponseSchema
-from app.security.http import get_token
-from app.security.interfaces import JWTAuthManagerInterface
 from app.storages.interfaces import S3StorageInterface
 
 router = APIRouter()
@@ -30,25 +26,13 @@ router = APIRouter()
 )
 def create_profile(
     user_id: int,
-    token: str = Depends(get_token),
-    jwt_manager: JWTAuthManagerInterface = Depends(get_jwt_auth_manager),
+    current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db),
     s3_client: S3StorageInterface = Depends(get_s3_storage_client),
     profile_data: ProfileCreateSchema = Depends(ProfileCreateSchema.from_form),
 ) -> ProfileResponseSchema:
-    try:
-        payload = jwt_manager.decode_access_token(token)
-        token_user_id = payload.get("user_id")
-    except BaseSecurityError as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
-
-    if user_id != token_user_id:
-        user_group = (
-            db.query(UserGroupModel)
-            .join(UserModel)
-            .filter(UserModel.id == token_user_id)
-            .first()
-        )
+    if user_id != current_user.id:
+        user_group = current_user.group
 
         if not user_group or user_group.name == UserGroupEnum.USER:
             raise HTTPException(

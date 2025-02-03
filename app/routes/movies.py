@@ -662,7 +662,22 @@ def remove_from_favorites(
         db.commit()
 
 
-@router.post("/{movie_id}/rating", response_model=MovieRatingResponseSchema)
+@router.post("/{movie_id}/rating", response_model=MovieRatingResponseSchema,
+             summary="Rate a movie",
+             description="Allows an authenticated user to rate a movie. If the user has already rated the movie, an error is returned.",
+             responses={
+                 200: {
+                     "description": "Successfully rated the movie",
+                     "model": MovieRatingResponseSchema,
+                 },
+                 400: {
+                     "description": "You have already rated this movie",
+                 },
+                 404: {
+                     "description": "Movie not found",
+                 },
+             },
+             )
 def rate_movie(
     movie_id: int,
     rating_data: MovieRatingCreateSchema,
@@ -701,7 +716,15 @@ def rate_movie(
     return rating
 
 
-@router.delete("/{movie_id}/rating", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{movie_id}/rating", status_code=status.HTTP_204_NO_CONTENT,
+               summary="Remove movie rating",
+               description="Removes the rating of a movie by the authenticated user.",
+               responses={
+                   204: {
+                       "description": "Successfully removed the rating",
+                   },
+               },
+               )
 def remove_movie_rating(
     movie_id: int,
     db: Session = Depends(get_db),

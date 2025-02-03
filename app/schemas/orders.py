@@ -3,10 +3,10 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
-from database.models.movies import MovieModel
-from database.models.orders import OrderStatusEnum
-from schemas.examples.orders import order_item_schema_example, order_schema_example
-from schemas.shopping_carts import CartResponseSchema
+from app.database.models.orders import OrderStatusEnum
+from app.schemas.examples.orders import order_item_schema_example, order_schema_example
+from app.schemas.shopping_carts import CartResponseSchema
+from schemas.movies import MovieSchema
 
 
 class OrderSchema(BaseModel):
@@ -15,7 +15,7 @@ class OrderSchema(BaseModel):
     created_at: datetime.datetime
     status: OrderStatusEnum
     total_amount: Decimal
-    movies: list[MovieModel]
+    movies: list[MovieSchema]
 
     model_config = {
         "from_attributes": True,
@@ -28,7 +28,7 @@ class OrderCreateSchema(BaseModel):
 
 
 class OrderListResponseSchema(BaseModel):
-    order = OrderSchema
+    order: OrderSchema
     prev_page: str | None
     next_page: str | None
     total_pages: int

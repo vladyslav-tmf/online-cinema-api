@@ -6,11 +6,13 @@ from sqlalchemy.orm import Session
 from app.database.session import get_db
 from app.database.models.accounts import ActivationTokenModel
 
-celery = Celery("tasks", broker="redis://localhost:6379/0")
+celery = Celery("tasks")
+celery.config_from_object("celeryconfig")
 
 
 @celery.task
 def delete_expired_activation_tokens():
+    """Deletes activation tokens that have expired."""
     db: Session = next(get_db())
     current_time = datetime.now(timezone.utc)
 

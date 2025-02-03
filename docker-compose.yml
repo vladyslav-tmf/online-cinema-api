@@ -42,7 +42,7 @@ services:
       - .env
     environment:
       - LOG_LEVEL=debug
-      - PYTHONPATH=/app/fastapi
+      - PYTHONPATH=/usr/app/fastapi
       - WATCHFILES_FORCE_POLLING=true
     ports:
       - "8000:8000"
@@ -50,7 +50,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./app:/app/fastapi
+      - ./app:/usr/app/fastapi
     networks:
       - cinema_api_network
 
@@ -62,11 +62,11 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./app:/app/fastapi
+      - ./app:/usr/app/fastapi
     env_file:
       - .env
     environment:
-      - PYTHONPATH=/app/fastapi
+      - PYTHONPATH=/usr/app/fastapi
     networks:
       - cinema_api_network
 
@@ -91,7 +91,7 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
-      - ./app:/app/fastapi
+      - ./app:/usr/app/fastapi
     networks:
       - cinema_api_network
 
@@ -108,7 +108,7 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
-      - ./app:/app/fastapi
+      - ./app:/usr/app/fastapi
     networks:
       - cinema_api_network
 

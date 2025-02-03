@@ -163,7 +163,22 @@ def activate_account(
     return MessageResponseSchema(message="User account activated successfully.")
 
 
-@router.post("/{user_id}/activate/", response_model=MessageResponseSchema)
+@router.post("/{user_id}/activate/", response_model=MessageResponseSchema,
+             summary="Activate user account by admin",
+             description="Allows an admin to activate a user account by user ID. If the requester is not an admin, a forbidden error is returned.",
+             responses={
+                 200: {
+                     "description": "User account activated successfully",
+                     "model": MessageResponseSchema,
+                 },
+                 403: {
+                     "description": "Forbidden: User does not have permissions",
+                 },
+                 404: {
+                     "description": "User not found",
+                 },
+             },
+             )
 def activate_account_by_id(
     user_id: int,
     db: Session = Depends(get_db),
@@ -192,7 +207,22 @@ def activate_account_by_id(
     return MessageResponseSchema(message="User account activated successfully.")
 
 
-@router.post("/{user_id}/change_group", response_model=MessageResponseSchema)
+@router.post("/{user_id}/change_group", response_model=MessageResponseSchema,
+             summary="Change user group by admin",
+             description="Allows an admin to change a user's group (role) by user ID. If the requester is not an admin, a forbidden error is returned.",
+             responses={
+                 200: {
+                     "description": "User role changed successfully",
+                     "model": MessageResponseSchema,
+                 },
+                 403: {
+                     "description": "Forbidden: User does not have permissions",
+                 },
+                 404: {
+                     "description": "User or group not found",
+                 },
+             },
+             )
 def change_user_group(
     user_id: int,
     group_data: ChangeGroupSchema,

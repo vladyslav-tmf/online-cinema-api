@@ -70,6 +70,47 @@ services:
     networks:
       - cinema_api_network
 
+  redis:
+    image: redis:latest
+    container_name: redis_cinema_api
+    ports:
+      - "6379:6379"
+    networks:
+      - cinema_api_network
+
+  celery-worker:
+    build: .
+    container_name: celery_worker_cinema_api
+    command: celery -A app.celery worker --loglevel=info
+    depends_on:
+      - redis
+      - db
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./app:/app/fastapi
+    networks:
+      - cinema_api_network
+
+  celery-beat:
+    build: .
+    container_name: celery_beat_cinema_api
+    command: celery -A app.celery beat --loglevel=info
+    depends_on:
+      - redis
+      - db
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./app:/app/fastapi
+    networks:
+      - cinema_api_network
 
 volumes:
   postgres_cinema_api_data:

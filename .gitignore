@@ -2,3 +2,4 @@
 .env
 *.db
 __pycache__
+celerybeat-schedule

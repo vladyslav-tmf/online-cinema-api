@@ -42,7 +42,7 @@ services:
       - .env
     environment:
       - LOG_LEVEL=debug
-      - PYTHONPATH=/usr/app/fastapi
+      - PYTHONPATH=/app
       - WATCHFILES_FORCE_POLLING=true
     ports:
       - "8000:8000"
@@ -50,7 +50,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./app:/usr/app/fastapi
+      - .:/app
     networks:
       - cinema_api_network
 
@@ -62,11 +62,11 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./app:/usr/app/fastapi
+      - .:/app
     env_file:
       - .env
     environment:
-      - PYTHONPATH=/usr/app/fastapi
+      - PYTHONPATH=/app
     networks:
       - cinema_api_network
 
@@ -81,34 +81,36 @@ services:
   celery-worker:
     build: .
     container_name: celery_worker_cinema_api
-    command: celery -A app.celery worker --loglevel=info
+    command: celery -A app.tasks.celery worker --loglevel=info
     depends_on:
       - redis
       - db
     env_file:
       - .env
     environment:
+      - PYTHONPATH=/app
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
-      - ./app:/usr/app/fastapi
+      - .:/app
     networks:
       - cinema_api_network
 
   celery-beat:
     build: .
     container_name: celery_beat_cinema_api
-    command: celery -A app.celery beat --loglevel=info
+    command: celery -A app.tasks.celery beat --loglevel=info
     depends_on:
       - redis
       - db
     env_file:
       - .env
     environment:
+      - PYTHONPATH=/app
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
-      - ./app:/usr/app/fastapi
+      - .:/app
     networks:
       - cinema_api_network
 

@@ -142,15 +142,16 @@ def activate_account_by_id(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ) -> MessageResponseSchema:
-    if current_user.group != UserGroupEnum.ADMIN:
+    if current_user.group.name.lower() != UserGroupEnum.ADMIN:
         raise HTTPException(
-            status_code=403,
-            detail="You don't have permissions."
+            status_code=status.HTTP_403_FORBIDDEN, detail="You don't have permissions."
         )
 
     user = db.query(UserModel).filter_by(id=user_id).first()
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
+        )
     user.is_active = True
 
     db.commit()
@@ -160,20 +161,21 @@ def activate_account_by_id(
 
 @router.post("/{user_id}/change_group", response_model=MessageResponseSchema)
 def change_user_group(
-        user_id: int,
-        group_data: ChangeGroupSchema,
-        db: Session = Depends(get_db),
-        current_user: UserModel = Depends(get_current_user),
+    user_id: int,
+    group_data: ChangeGroupSchema,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
 ) -> MessageResponseSchema:
-    if current_user.group != UserGroupEnum.ADMIN:
+    if current_user.group.name.lower() != UserGroupEnum.ADMIN:
         raise HTTPException(
-            status_code=403,
-            detail="You don't have permissions."
+            status_code=status.HTTP_403_FORBIDDEN, detail="You don't have permissions."
         )
 
     user = db.query(UserModel).filter_by(id=user_id).first()
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
+        )
     user.group = group_data.group
 
     db.commit()

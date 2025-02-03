@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.exc import IntegrityError
@@ -81,7 +82,7 @@ def create_order(
         if not order_data.order_items:
             raise HTTPException(status_code=409, detail="Your cart is empty")
 
-        total_amount = 0
+        total_amount = Decimal("0")
 
         for order_item in order_data.order_items:
             existing_order_item = db.query(CartItemModel).filter_by(
@@ -112,7 +113,9 @@ def create_order(
 
         db.commit()
 
-        return RedirectResponse(url=f"/payments/pay?order_id={order.id}", status_code=303)
+        return RedirectResponse(
+            url=f"/payments/pay?order_id={order.id}", status_code=303
+        )
 
     except IntegrityError:
         db.rollback()

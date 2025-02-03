@@ -499,7 +499,22 @@ def delete_movie(
     db.commit()
 
 
-@router.post("/{movie_id}/like", response_model=MovieLikeResponseSchema)
+@router.post("/{movie_id}/like", response_model=MovieLikeResponseSchema,
+             summary="Like or dislike a movie",
+             description="Allows an authenticated user to like or dislike a movie. If the user has already reacted, the existing reaction is updated or removed.",
+             responses={
+                 200: {
+                     "description": "Successfully added or updated the like/dislike",
+                     "model": MovieLikeResponseSchema,
+                 },
+                 400: {
+                     "description": "User has already liked/disliked this movie",
+                 },
+                 404: {
+                     "description": "Movie not found",
+                 },
+             },
+             )
 def like_movie(
     movie_id: int,
     like_data: MovieLikeCreateSchema,

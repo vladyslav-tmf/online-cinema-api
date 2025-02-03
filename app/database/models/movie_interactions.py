@@ -4,7 +4,6 @@ from enum import Enum
 from sqlalchemy import (
     DateTime,
     Enum as SQLAlchemyEnum,
-    Float,
     ForeignKey,
     Text,
     UniqueConstraint,

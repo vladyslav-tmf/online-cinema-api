@@ -1,13 +1,14 @@
 from fastapi import FastAPI
 
+from app.database.init_db import init_user_groups
+from app.database.session import SessionLocal
 from app.routes.accounts import router as accounts_router
 from app.routes.movie_metadata import router as movie_metadata_router
 from app.routes.movies import router as movie_router
+from app.routes.orders import router as order_router
+from app.routes.payments import router as payments_router
 from app.routes.profiles import router as profiles_router
 from app.routes.shopping_carts import router as shopping_carts_router
-from app.routes.orders import router as order_router
-from app.database.init_db import init_user_groups
-from app.database.session import SessionLocal
 
 app = FastAPI()
 
@@ -28,3 +29,4 @@ app.include_router(
 )
 app.include_router(order_router, prefix="/orders", tags=["orders"])
 app.include_router(shopping_carts_router, prefix="/cart", tags=["shopping-carts"])
+app.include_router(payments_router, prefix="/payments", tags=["payments"])

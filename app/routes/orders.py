@@ -65,14 +65,34 @@ def get_order_list(
     return response
 
 
+def check_pending_orders(movie_ids: list[int], user_id: int, db: Session) -> None:
+    pending_orders = (
+        db.query(OrderModel)
+        .filter(
+            OrderModel.user_id == user_id, OrderModel.status == OrderStatusEnum.PENDING
+        )
+        .all()
+    )
+
+    for order in pending_orders:
+        order_movie_ids = [item.movie_id for item in order.items]
+        if any(movie_id in order_movie_ids for movie_id in movie_ids):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You have pending orders with these movies",
+            )
+
+
 @router.post("/orders/")
 def create_order(
     order_data: OrderCreateSchema,
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
-
     try:
+        movie_ids = [item.movie_id for item in order_data.order_items]
+        check_pending_orders(movie_ids, current_user.id, db)
+
         order = OrderModel(user_id=current_user.id)
 
         db.add(order)

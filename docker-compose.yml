@@ -44,6 +44,8 @@ services:
       - LOG_LEVEL=debug
       - PYTHONPATH=/app
       - WATCHFILES_FORCE_POLLING=true
+      - DOCKER_ENV=true
+      - POSTGRES_DB=${POSTGRES_DB}
     ports:
       - "8000:8000"
     depends_on:
@@ -67,6 +69,8 @@ services:
       - .env
     environment:
       - PYTHONPATH=/app
+      - DOCKER_ENV=true
+      - POSTGRES_DB=${POSTGRES_DB}
     networks:
       - cinema_api_network
 

@@ -462,7 +462,21 @@ def update_movie(
 
 
 @router.delete(
-    "/{movie_id}", summary="Delete a movie", status_code=status.HTTP_204_NO_CONTENT
+    "/{movie_id}",
+    summary="Delete a movie",
+    description="Delete an existing movie by its ID. Only administrators can perform this action.",
+    status_code=status.HTTP_204_NO_CONTENT,
+responses={
+        204: {
+            "description": "Movie successfully deleted",
+        },
+        403: {
+            "description": "Forbidden - Only administrators can delete movies",
+        },
+        404: {
+            "description": "Movie not found",
+        },
+    },
 )
 def delete_movie(
     movie_id: int,

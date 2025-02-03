@@ -3,9 +3,9 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
-from database.models.payments import PaymentStatusEnum
-from schemas.orders import OrderSchema, OrderItemSchema
-from schemas.users import UserSchema
+from app.database.models.payments import PaymentStatusEnum
+from app.schemas.orders import OrderSchema, OrderItemSchema
+from app.schemas.accounts import UserLoginRequestSchema
 
 
 class PaymentListSchema(BaseModel):
@@ -23,7 +23,7 @@ class PaymentSchema(BaseModel):
     created_at: datetime.datetime
     status: PaymentStatusEnum
     amount: Decimal
-    user: UserSchema
+    user: UserLoginRequestSchema
     order: OrderSchema
     items: list["PaymentItemSchema"]
 

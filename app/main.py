@@ -5,16 +5,19 @@ from app.routes.movie_metadata import router as movie_metadata_router
 from app.routes.movies import router as movie_router
 from app.routes.profiles import router as profiles_router
 from app.routes.shopping_carts import router as shopping_carts_router
+from app.routes.orders import router as order_router
 from app.database.init_db import init_user_groups
 from app.database.session import SessionLocal
 
 app = FastAPI()
 
-db = SessionLocal()
-try:
-    init_user_groups(db)
-finally:
-    db.close()
+
+if __name__ == "__main__":
+    db = SessionLocal()
+    try:
+        init_user_groups(db)
+    finally:
+        db.close()
 
 
 app.include_router(accounts_router, prefix="/accounts", tags=["accounts"])
@@ -23,4 +26,5 @@ app.include_router(movie_router, prefix="/movies", tags=["movies"])
 app.include_router(
     movie_metadata_router, prefix="/movie-metadata", tags=["movie-metadata"]
 )
+app.include_router(order_router, prefix="/orders", tags=["orders"])
 app.include_router(shopping_carts_router, prefix="/cart", tags=["shopping-carts"])

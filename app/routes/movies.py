@@ -834,6 +834,20 @@ def get_movie_comments(
 @router.post(
     "/{movie_id}/comments/{comment_id}/like",
     response_model=CommentLikeResponseSchema,
+    summary="Like a comment",
+    description="Allows an authenticated user to like a specific comment on a movie. A user can only like a comment once. If they have already liked it, an error is returned.",
+    responses={
+        200: {
+            "description": "Successfully liked the comment",
+            "model": CommentLikeResponseSchema,
+        },
+        400: {
+            "description": "User has already liked this comment",
+        },
+        404: {
+            "description": "Comment or movie not found",
+        },
+    },
 )
 def like_comment(
     movie_id: int,
@@ -875,6 +889,16 @@ def like_comment(
 @router.delete(
     "/{movie_id}/comments/{comment_id}/like",
     status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove like from a comment",
+    description="Allows an authenticated user to remove their like from a specific comment on a movie.",
+    responses={
+        204: {
+            "description": "Successfully removed the like from the comment",
+        },
+        404: {
+            "description": "Comment or movie not found",
+        },
+    },
 )
 def remove_comment_like(
     movie_id: int,

@@ -45,7 +45,17 @@ def check_movie_availability(movie_id: int, user_id: int, db: Session) -> None:
         )
 
 
-@router.get("/", response_model=CartResponseSchema)
+@router.get("/", response_model=CartResponseSchema,
+            summary="Get user's cart",
+            description="Retrieves the current user's cart.",
+            responses={
+    200: {
+        "description": "Successfully retrieved the user's cart or created a new one.",
+    },
+    404: {
+        "description": "Cart not found and failed to create a new one.",
+    }
+})
 def get_cart(
     current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)
 ):
@@ -65,7 +75,21 @@ def get_cart(
     return cart
 
 
-@router.post("/items/", response_model=CartItemResponseSchema)
+@router.post("/items/", response_model=CartItemResponseSchema,
+             summary="Add item to cart",
+             description="This endpoint adds an item to the user's cart. If the item already exists in the cart, an error is returned.",
+             responses={
+                 201: {
+                     "description": "Item successfully added to the cart.",
+                 },
+                 400: {
+                     "description": "Item already exists in the cart.",
+                 },
+                 404: {
+                     "description": "Cart not found or item not available.",
+                 }
+             }
+             )
 def add_item_to_cart(
     item_data: CartItemCreateSchema,
     current_user: UserModel = Depends(get_current_user),
@@ -101,7 +125,18 @@ def add_item_to_cart(
         )
 
 
-@router.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT,
+               summary="Remove item from cart",
+               description="This endpoint removes an item from the user's cart.",
+               responses={
+                   204: {
+                       "description": "Item successfully removed from the cart."
+                   },
+                   404: {
+                       "description": "Cart or item not found in cart.",
+                   }
+               }
+               )
 def remove_item_from_cart(
     item_id: int,
     current_user: UserModel = Depends(get_current_user),
@@ -127,7 +162,18 @@ def remove_item_from_cart(
     db.commit()
 
 
-@router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/", status_code=status.HTTP_204_NO_CONTENT,
+               summary="Clear cart",
+               description="This endpoint removes all items from the user's cart.",
+               responses={
+                   204: {
+                       "description": "All items successfully removed from the cart."
+                   },
+                   404: {
+                       "description": "Cart not found.",
+                   }
+               }
+               )
 def clear_cart(
     current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)
 ):

@@ -136,7 +136,7 @@ def activate_account(
     return MessageResponseSchema(message="User account activated successfully.")
 
 
-@router.post("/activate/{user_id}", response_model=MessageResponseSchema)
+@router.post("/{user_id}/activate/", response_model=MessageResponseSchema)
 def activate_account_by_id(
     user_id: int,
     db: Session = Depends(get_db),

@@ -583,7 +583,22 @@ def remove_movie_like(
         db.commit()
 
 
-@router.post("/{movie_id}/favorite", response_model=MovieFavoriteResponseSchema)
+@router.post("/{movie_id}/favorite", response_model=MovieFavoriteResponseSchema,
+             summary="Add a movie to favorites",
+             description="Allows an authenticated user to add a movie to their list of favorites. If the movie is already in favorites, an error is returned.",
+             responses={
+                 200: {
+                     "description": "Successfully added to favorites",
+                     "model": MovieFavoriteResponseSchema,
+                 },
+                 400: {
+                     "description": "Movie is already in favorites",
+                 },
+                 404: {
+                     "description": "Movie not found",
+                 },
+             },
+             )
 def add_to_favorites(
     movie_id: int,
     db: Session = Depends(get_db),
@@ -620,7 +635,15 @@ def add_to_favorites(
     return favorite
 
 
-@router.delete("/{movie_id}/favorite", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{movie_id}/favorite", status_code=status.HTTP_204_NO_CONTENT,
+               summary="Remove a movie from favorites",
+               description="Removes an authenticated user's favorite movie from their list.",
+               responses={
+                   204: {
+                       "description": "Successfully removed from favorites",
+                   },
+               },
+               )
 def remove_from_favorites(
     movie_id: int,
     db: Session = Depends(get_db),

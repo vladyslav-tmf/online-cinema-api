@@ -22,6 +22,7 @@ class EmailSender(EmailSenderInterface):
         activation_complete_email_template_name: str,
         password_email_template_name: str,
         password_complete_email_template_name: str,
+        payment_success_email_template_name: str,
     ):
         self._hostname = hostname
         self._port = port
@@ -36,6 +37,7 @@ class EmailSender(EmailSenderInterface):
         self._password_complete_email_template_name = (
             password_complete_email_template_name
         )
+        self._payment_success_email_template_name = payment_success_email_template_name
 
         self._env = Environment(loader=FileSystemLoader(template_dir))
 
@@ -82,4 +84,16 @@ class EmailSender(EmailSenderInterface):
         html_content = template.render(email=email, login_link=login_link)
 
         subject = "Your Password Has Been Successfully Reset"
+        self._send_email(email, subject, html_content)
+
+    def send_payment_success_email(
+            self,
+            email: str,
+            user_name: str,
+            amount: str
+    ) -> None:
+        template = self._env.get_template(self._payment_success_email_template_name)
+        html_content = template.render(email=email, user_name=user_name, amount=amount)
+
+        subject = "Payment Confirmation - Online Cinema"
         self._send_email(email, subject, html_content)

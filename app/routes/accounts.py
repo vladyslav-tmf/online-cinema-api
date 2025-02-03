@@ -142,7 +142,6 @@ def activate_account_by_id(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ) -> MessageResponseSchema:
-
     if current_user.group != UserGroupEnum.ADMIN:
         raise HTTPException(
             status_code=403,

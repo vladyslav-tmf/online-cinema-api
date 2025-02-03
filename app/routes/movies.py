@@ -276,6 +276,12 @@ def get_movie(
     "/",
     response_model=MovieSchema,
     summary="Create a new movie",
+    description=(
+        "<h3>This endpoint allows administrators to add a new movie.</h3>"
+        "<p>Only users with ADMIN rights can use this feature.</p>"
+        "<p>Required fields include the movie name, certification, genres, "
+        "directors, and stars.</p>"
+    ),
     responses={
         status.HTTP_201_CREATED: {
             "description": "Movie created successfully.",
@@ -284,6 +290,12 @@ def get_movie(
             "description": "Invalid input.",
             "content": {
                 "application/json": {"example": {"detail": "Invalid input data."}}
+            },
+        },
+        status.HTTP_403_FORBIDDEN: {
+            "description": "User is not authorized to create movies.",
+            "content": {
+                "application/json": {"example": {"detail": "Only administrators can create movies"}}
             },
         },
     },

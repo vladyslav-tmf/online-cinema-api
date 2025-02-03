@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from app.database.models.orders import OrderStatusEnum
 from app.schemas.examples.orders import order_item_schema_example, order_schema_example
 from app.schemas.shopping_carts import CartResponseSchema
-from schemas.movies import MovieSchema
+from app.schemas.movies import MovieSchema
 
 
 class OrderSchema(BaseModel):

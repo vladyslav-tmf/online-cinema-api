@@ -169,7 +169,7 @@ def change_user_group(
             detail="You don't have permissions."
         )
     user = db.query(UserModel).filter_by(id=user_id).first()
-    user.role = group_data.group
+    user.group = group_data.group
 
     db.commit()
 

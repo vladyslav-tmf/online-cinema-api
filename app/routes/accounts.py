@@ -141,18 +141,17 @@ def activate_account_by_id(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
-) -> MessageResponseSchema | HTTPException:
+) -> MessageResponseSchema:
 
     if current_user.group != UserGroupEnum.ADMIN:
         raise HTTPException(
             status_code=403,
             detail="You don't have permissions."
         )
-    user = db.query(UserModel).filter_by(id=user_id).first()
 
+    user = db.query(UserModel).filter_by(id=user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found.")
-
     user.is_active = True
 
     db.commit()
@@ -166,23 +165,21 @@ def change_user_group(
         group_data: ChangeGroupSchema,
         db: Session = Depends(get_db),
         current_user: UserModel = Depends(get_current_user),
-) -> MessageResponseSchema | HTTPException:
+) -> MessageResponseSchema:
     if current_user.group != UserGroupEnum.ADMIN:
         raise HTTPException(
             status_code=403,
             detail="You don't have permissions."
         )
-    user = db.query(UserModel).filter_by(id=user_id).first()
 
+    user = db.query(UserModel).filter_by(id=user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found.")
-
     user.group = group_data.group
 
     db.commit()
 
     return MessageResponseSchema(message="User role changed successfully.")
-
 
 
 @router.post("/password-reset/request/", response_model=MessageResponseSchema)

@@ -14,3 +14,8 @@ class StubEmailSender(EmailSenderInterface):
 
     def send_password_reset_complete_email(self, email: str, login_link: str) -> None:
         return None
+
+    def send_payment_success_email(
+        self, email: str, user_name: str, amount: str, watch_link: str
+    ) -> None:
+        return None

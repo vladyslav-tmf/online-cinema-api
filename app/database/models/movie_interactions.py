@@ -4,7 +4,6 @@ from enum import Enum
 from sqlalchemy import (
     DateTime,
     Enum as SQLAlchemyEnum,
-    Float,
     ForeignKey,
     Text,
     UniqueConstraint,
@@ -136,7 +135,7 @@ class MovieRatingModel(Base):
     movie_id: Mapped[int] = mapped_column(
         ForeignKey("movies.id", ondelete="CASCADE"), nullable=False
     )
-    rating: Mapped[float] = mapped_column(Float, nullable=False)
+    rating: Mapped[int] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

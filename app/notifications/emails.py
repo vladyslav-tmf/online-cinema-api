@@ -87,13 +87,12 @@ class EmailSender(EmailSenderInterface):
         self._send_email(email, subject, html_content)
 
     def send_payment_success_email(
-            self,
-            email: str,
-            user_name: str,
-            amount: str
+        self, email: str, user_name: str, amount: str, watch_link: str
     ) -> None:
         template = self._env.get_template(self._payment_success_email_template_name)
-        html_content = template.render(email=email, user_name=user_name, amount=amount)
+        html_content = template.render(
+            email=email, user_name=user_name, amount=amount, watch_link=watch_link
+        )
 
         subject = "Payment Confirmation - Online Cinema"
         self._send_email(email, subject, html_content)

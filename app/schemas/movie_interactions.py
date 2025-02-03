@@ -63,14 +63,14 @@ class MovieFavoriteResponseSchema(BaseModel):
 
 
 class MovieRatingCreateSchema(BaseModel):
-    rating: float = Field(..., ge=1, le=10)
+    rating: int = Field(..., ge=1, le=10)
 
     model_config = ConfigDict(from_attributes=True)
 
     @field_validator("rating")
     @classmethod
     def validate_rating(cls, value):
-        if not isinstance(value, int) or not 1 <= value <= 10:
+        if not 1 <= value <= 10:
             raise ValueError("Rating must be an integer between 1 and 10")
         return value
 

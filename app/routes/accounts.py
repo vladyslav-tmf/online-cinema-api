@@ -182,6 +182,13 @@ def change_user_group(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
+
+    if user.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Admin cannot change their own role.",
+        )
+
     new_group = db.query(UserGroupModel).filter_by(name=group_data.group).first()
     if new_group is None:
         raise HTTPException(

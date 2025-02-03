@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 
 from app.validators.accounts import validate_password_strength
+from app.database.models.accounts import UserGroupEnum
 
 
 class BaseEmailPasswordSchema(BaseModel):
@@ -65,3 +66,7 @@ class TokenRefreshRequestSchema(BaseModel):
 class TokenRefreshResponseSchema(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class ChangeGroupSchema(BaseModel):
+    group: UserGroupEnum

@@ -9,6 +9,7 @@ from app.config.dependencies import (
     get_accounts_email_notificator,
     get_jwt_auth_manager,
     get_settings,
+    get_current_user,
 )
 from app.config.settings import BaseAppSettings
 from app.database.models.accounts import (
@@ -33,6 +34,7 @@ from app.schemas.accounts import (
     UserLoginResponseSchema,
     UserRegistrationRequestSchema,
     UserRegistrationResponseSchema,
+    ChangeGroupSchema,
 )
 from app.security.interfaces import JWTAuthManagerInterface
 
@@ -132,6 +134,47 @@ def activate_account(
     )
 
     return MessageResponseSchema(message="User account activated successfully.")
+
+
+@router.post("/activate/{user_id}", response_model=MessageResponseSchema)
+def activate_account_by_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+) -> MessageResponseSchema | HTTPException:
+
+    if current_user.group != "admin":
+        return HTTPException(
+            status_code=403,
+            detail="You don't have permissions."
+        )
+    user = db.query(UserModel).filter_by(id=user_id).first()
+    user.is_active = True
+
+    db.commit()
+
+    return MessageResponseSchema(message="User account activated successfully.")
+
+
+@router.post("/{user_id}/change_group", response_model=MessageResponseSchema)
+def change_user_group(
+        user_id: int,
+        group_data: ChangeGroupSchema,
+        db: Session = Depends(get_db),
+        current_user: UserModel = Depends(get_current_user),
+) -> MessageResponseSchema | HTTPException:
+    if current_user.group != "admin":
+        return HTTPException(
+            status_code=403,
+            detail="You don't have permissions."
+        )
+    user = db.query(UserModel).filter_by(id=user_id).first()
+    user.role = group_data.group
+
+    db.commit()
+
+    return MessageResponseSchema(message="User role changed successfully.")
+
 
 
 @router.post("/password-reset/request/", response_model=MessageResponseSchema)

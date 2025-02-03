@@ -176,8 +176,13 @@ def change_user_group(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
-    user.group = group_data.group
+    new_group = db.query(UserGroupModel).filter_by(name=group_data.group).first()
+    if new_group is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Group not found."
+        )
 
+    user.group = new_group
     db.commit()
 
     return MessageResponseSchema(message="User role changed successfully.")

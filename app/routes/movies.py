@@ -743,7 +743,22 @@ def remove_movie_rating(
         db.commit()
 
 
-@router.post("/{movie_id}/comments", response_model=MovieCommentResponseSchema)
+@router.post("/{movie_id}/comments", response_model=MovieCommentResponseSchema,
+             summary="Create a comment on a movie",
+             description="Allows an authenticated user to create a comment on a movie. Users can also reply to existing comments by specifying the parent comment ID.",
+             responses={
+                 200: {
+                     "description": "Successfully created the comment",
+                     "model": MovieCommentResponseSchema,
+                 },
+                 400: {
+                     "description": "Invalid parent comment ID or comment data",
+                 },
+                 404: {
+                     "description": "Movie not found or parent comment not found",
+                 },
+             },
+             )
 def create_comment(
     movie_id: int,
     comment_data: MovieCommentCreateSchema,
@@ -779,7 +794,19 @@ def create_comment(
     return comment
 
 
-@router.get("/{movie_id}/comments", response_model=list[MovieCommentResponseSchema])
+@router.get("/{movie_id}/comments", response_model=list[MovieCommentResponseSchema],
+            summary="Get comments for a movie",
+            description="Fetches all comments for a specific movie. Each comment includes like count and whether the current user has liked it.",
+            responses={
+                200: {
+                    "description": "Successfully fetched the comments",
+                    "model": list[MovieCommentResponseSchema],
+                },
+                404: {
+                    "description": "Movie not found",
+                },
+            },
+            )
 def get_movie_comments(
     movie_id: int,
     db: Session = Depends(get_db),

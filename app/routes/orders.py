@@ -5,12 +5,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse
 
-from config.dependencies import get_current_user
-from database.models.accounts import UserModel, UserGroupEnum
-from database.models.orders import OrderModel, OrderItemModel, OrderStatusEnum
-from database.models.shopping_carts import CartItemModel
-from database.session import get_db
-from schemas.orders import OrderCreateSchema, OrderListResponseSchema, OrderSchema
+from app.config.dependencies import get_current_user
+from app.database.models.accounts import UserModel, UserGroupEnum
+from app.database.models.orders import OrderModel, OrderItemModel, OrderStatusEnum
+from app.database.models.shopping_carts import CartItemModel
+from app.database.session import get_db
+from app.routes.shopping_carts import check_movie_availability
+from app.schemas.orders import OrderCreateSchema, OrderListResponseSchema, OrderSchema
 
 router = APIRouter()
 
@@ -80,28 +81,38 @@ def create_order(
         if not order_data.order_items:
             raise HTTPException(status_code=409, detail="Your cart is empty")
 
+        total_amount = 0
+
         for order_item in order_data.order_items:
             existing_order_item = db.query(CartItemModel).filter_by(
                 order_id=order.id, movie_id=order_item.movie_id
             )
+
+            check_movie_availability(order_item.movie_id, current_user.id, db)
+
             if existing_order_item:
                 raise HTTPException(
                     status_code=409,
                     detail=f"Duplicate purchase of {order_item.movie.name}",
                 )
+
             item = OrderItemModel(
                 order_id=order.id,
                 movie_id=order_item.movie_id,
                 price_at_order=order_item.movie.price,
             )
 
+            total_amount += item.price_at_order
+
             db.add(item)
             db.flush()
             db.refresh(item)
 
+        order.total_amount = total_amount
+
         db.commit()
 
-        return RedirectResponse(url="/payments/pay", status_code=303)
+        return RedirectResponse(url=f"/payments/pay?order_id={order.id}", status_code=303)
 
     except IntegrityError:
         db.rollback()

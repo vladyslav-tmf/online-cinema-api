@@ -21,6 +21,7 @@ boto3 = "^1.36.11"
 alembic = "^1.14.1"
 bcrypt = "^4.2.1"
 celery = {extras = ["beat"], version = "^5.4.0"}
+redis = "^5.2.1"
 
 [tool.black]
 line-length = 88

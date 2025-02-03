@@ -2,6 +2,7 @@ from logging.config import fileConfig
 
 from alembic import context
 
+from app.database.init_db import init_user_groups
 from app.database.models import (  # noqa: F401
     accounts,
     movie_interactions,
@@ -11,7 +12,7 @@ from app.database.models import (  # noqa: F401
     shopping_carts,
 )
 from app.database.models.base import Base
-from app.database.session import engine
+from app.database.session import SessionLocal, engine
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -59,6 +60,13 @@ def run_migrations_offline() -> None:
         with context.begin_transaction():
             context.run_migrations()
 
+    # Initialize user groups after migrations
+    db = SessionLocal()
+    try:
+        init_user_groups(db)
+    finally:
+        db.close()
+
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
@@ -79,6 +87,13 @@ def run_migrations_online() -> None:
 
         with context.begin_transaction():
             context.run_migrations()
+
+    # Initialize user groups after migrations
+    db = SessionLocal()
+    try:
+        init_user_groups(db)
+    finally:
+        db.close()
 
 
 if context.is_offline_mode():

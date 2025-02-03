@@ -41,7 +41,22 @@ from app.security.interfaces import JWTAuthManagerInterface
 router = APIRouter()
 
 
-@router.post("/register/", response_model=UserRegistrationResponseSchema)
+@router.post("/register/", response_model=UserRegistrationResponseSchema,
+             summary="User registration",
+             description="Allows a user to register by providing their email and password. If a user with the provided email already exists, a conflict error is returned. Upon successful registration, an activation email is sent.",
+             responses={
+                 200: {
+                     "description": "User registered successfully",
+                     "model": UserRegistrationResponseSchema,
+                 },
+                 409: {
+                     "description": "A user with this email already exists",
+                 },
+                 500: {
+                     "description": "An error occurred during user creation",
+                 },
+             },
+             )
 def register_user(
     user_data: UserRegistrationRequestSchema,
     background_tasks: BackgroundTasks,
@@ -86,7 +101,19 @@ def register_user(
         return UserRegistrationResponseSchema.model_validate(new_user)
 
 
-@router.post("/activate/", response_model=MessageResponseSchema)
+@router.post("/activate/", response_model=MessageResponseSchema,
+             summary="Activate user account",
+             description="Activates a user account using the provided email and activation token. If the token is invalid or expired, an error is returned. A successful activation will send a confirmation email.",
+             responses={
+                 200: {
+                     "description": "User account activated successfully",
+                     "model": MessageResponseSchema,
+                 },
+                 400: {
+                     "description": "Invalid or expired activation token",
+                 },
+             },
+             )
 def activate_account(
     activation_data: UserActivationRequestSchema,
     background_tasks: BackgroundTasks,

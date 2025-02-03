@@ -371,7 +371,22 @@ def create_movie(
     return new_movie
 
 
-@router.put("/{movie_id}", response_model=MovieSchema, summary="Update a movie")
+@router.put("/{movie_id}", response_model=MovieSchema,
+            summary="Update a movie",
+            description="Update an existing movie's details. Only administrators can perform this action.",
+            responses={
+                200: {
+                    "description": "Movie successfully updated",
+                    "model": MovieSchema,
+                },
+                403: {
+                    "description": "Forbidden - Only administrators can update movies",
+                },
+                404: {
+                    "description": "Movie not found or related resources (certification, genres, directors, stars) not found",
+                },
+            },
+            )
 def update_movie(
     movie_id: int,
     movie_data: MovieUpdateSchema,

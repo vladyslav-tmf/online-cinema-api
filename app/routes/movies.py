@@ -384,14 +384,14 @@ def create_movie(
         "Only administrators can perform this action."
     ),
     responses={
-        200: {
+        status.HTTP_200_OK: {
             "description": "Movie successfully updated",
             "model": MovieSchema,
         },
-        403: {
+        status.HTTP_403_FORBIDDEN: {
             "description": "Forbidden - Only administrators can update movies",
         },
-        404: {
+        status.HTTP_404_NOT_FOUND: {
             "description": (
                 "Movie not found or related resources "
                 "(certification, genres, directors, stars) not found"
@@ -478,17 +478,21 @@ def update_movie(
     summary="Delete a movie",
     description=(
         "Delete an existing movie by its ID. "
-        "Only administrators can perform this action."
+        "Only administrators can perform this action. "
+        "Cannot delete a movie if it has been purchased by users."
     ),
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
-        204: {
+        status.HTTP_204_NO_CONTENT: {
             "description": "Movie successfully deleted",
         },
-        403: {
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Cannot delete movie that has been purchased",
+        },
+        status.HTTP_403_FORBIDDEN: {
             "description": "Forbidden - Only administrators can delete movies",
         },
-        404: {
+        status.HTTP_404_NOT_FOUND: {
             "description": "Movie not found",
         },
     },
@@ -510,6 +514,12 @@ def delete_movie(
             status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
         )
 
+    if movie.order_items:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete movie that has been purchased by users",
+        )
+
     db.delete(movie)
     db.commit()
 
@@ -523,14 +533,14 @@ def delete_movie(
         "If the user has already reacted, the existing reaction is updated or removed."
     ),
     responses={
-        200: {
+        status.HTTP_200_OK: {
             "description": "Successfully added or updated the like/dislike",
             "model": MovieLikeResponseSchema,
         },
-        400: {
+        status.HTTP_400_BAD_REQUEST: {
             "description": "User has already liked/disliked this movie",
         },
-        404: {
+        status.HTTP_404_NOT_FOUND: {
             "description": "Movie not found",
         },
     },
@@ -582,7 +592,7 @@ def like_movie(
     summary="Remove like or dislike from a movie",
     description="Removes an authenticated user's like or dislike from a movie.",
     responses={
-        204: {
+        status.HTTP_204_NO_CONTENT: {
             "description": "Like/dislike successfully removed",
         },
     },
@@ -614,14 +624,14 @@ def remove_movie_like(
         "If the movie is already in favorites, an error is returned."
     ),
     responses={
-        200: {
+        status.HTTP_200_OK: {
             "description": "Successfully added to favorites",
             "model": MovieFavoriteResponseSchema,
         },
-        400: {
+        status.HTTP_400_BAD_REQUEST: {
             "description": "Movie is already in favorites",
         },
-        404: {
+        status.HTTP_404_NOT_FOUND: {
             "description": "Movie not found",
         },
     },
@@ -668,7 +678,7 @@ def add_to_favorites(
     summary="Remove a movie from favorites",
     description="Removes an authenticated user's favorite movie from their list.",
     responses={
-        204: {
+        status.HTTP_204_NO_CONTENT: {
             "description": "Successfully removed from favorites",
         },
     },
@@ -700,14 +710,14 @@ def remove_from_favorites(
         "If the user has already rated the movie, an error is returned."
     ),
     responses={
-        200: {
+        status.HTTP_200_OK: {
             "description": "Successfully rated the movie",
             "model": MovieRatingResponseSchema,
         },
-        400: {
+        status.HTTP_400_BAD_REQUEST: {
             "description": "You have already rated this movie",
         },
-        404: {
+        status.HTTP_404_NOT_FOUND: {
             "description": "Movie not found",
         },
     },
@@ -756,7 +766,7 @@ def rate_movie(
     summary="Remove movie rating",
     description="Removes the rating of a movie by the authenticated user.",
     responses={
-        204: {
+        status.HTTP_204_NO_CONTENT: {
             "description": "Successfully removed the rating",
         },
     },
@@ -788,14 +798,14 @@ def remove_movie_rating(
         "Users can also reply to existing comments by specifying the parent comment ID."
     ),
     responses={
-        200: {
+        status.HTTP_200_OK: {
             "description": "Successfully created the comment",
             "model": MovieCommentResponseSchema,
         },
-        400: {
+        status.HTTP_400_BAD_REQUEST: {
             "description": "Invalid parent comment ID or comment data",
         },
-        404: {
+        status.HTTP_404_NOT_FOUND: {
             "description": "Movie not found or parent comment not found",
         },
     },
@@ -844,11 +854,11 @@ def create_comment(
         "Each comment includes like count and whether the current user has liked it."
     ),
     responses={
-        200: {
+        status.HTTP_200_OK: {
             "description": "Successfully fetched the comments",
             "model": list[MovieCommentResponseSchema],
         },
-        404: {
+        status.HTTP_404_NOT_FOUND: {
             "description": "Movie not found",
         },
     },
@@ -887,14 +897,14 @@ def get_movie_comments(
         "If they have already liked it, an error is returned."
     ),
     responses={
-        200: {
+        status.HTTP_200_OK: {
             "description": "Successfully liked the comment",
             "model": CommentLikeResponseSchema,
         },
-        400: {
+        status.HTTP_400_BAD_REQUEST: {
             "description": "User has already liked this comment",
         },
-        404: {
+        status.HTTP_404_NOT_FOUND: {
             "description": "Comment or movie not found",
         },
     },
@@ -945,10 +955,10 @@ def like_comment(
         "from a specific comment on a movie."
     ),
     responses={
-        204: {
+        status.HTTP_204_NO_CONTENT: {
             "description": "Successfully removed the like from the comment",
         },
-        404: {
+        status.HTTP_404_NOT_FOUND: {
             "description": "Comment or movie not found",
         },
     },

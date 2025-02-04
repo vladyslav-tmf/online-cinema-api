@@ -24,11 +24,14 @@ router = APIRouter()
     response_model=ProfileResponseSchema,
     status_code=status.HTTP_201_CREATED,
     summary="Create a user profile",
-    description="Creates a new profile for a user, including personal information and avatar. Only admins or the user themselves can create a profile.",
+    description=(
+        "Creates a new profile for a user, including personal information and avatar. "
+        "Only admins or the user themselves can create a profile."
+    ),
     responses={
         201: {
             "description": "Profile created successfully",
-            },
+        },
         400: {
             "description": "Bad request: The user already has a profile.",
         },

@@ -41,22 +41,28 @@ from app.security.interfaces import JWTAuthManagerInterface
 router = APIRouter()
 
 
-@router.post("/register/", response_model=UserRegistrationResponseSchema,
-             summary="User registration",
-             description="Allows a user to register by providing their email and password. If a user with the provided email already exists, a conflict error is returned. Upon successful registration, an activation email is sent.",
-             responses={
-                 200: {
-                     "description": "User registered successfully",
-                     "model": UserRegistrationResponseSchema,
-                 },
-                 409: {
-                     "description": "A user with this email already exists",
-                 },
-                 500: {
-                     "description": "An error occurred during user creation",
-                 },
-             },
-             )
+@router.post(
+    "/register/",
+    response_model=UserRegistrationResponseSchema,
+    summary="User registration",
+    description=(
+        "Allows a user to register by providing their email and password. "
+        "If a user with the provided email already exists, a conflict error is "
+        "returned. Upon successful registration, an activation email is sent."
+    ),
+    responses={
+        200: {
+            "description": "User registered successfully",
+            "model": UserRegistrationResponseSchema,
+        },
+        409: {
+            "description": "A user with this email already exists",
+        },
+        500: {
+            "description": "An error occurred during user creation",
+        },
+    },
+)
 def register_user(
     user_data: UserRegistrationRequestSchema,
     background_tasks: BackgroundTasks,
@@ -101,28 +107,26 @@ def register_user(
         return UserRegistrationResponseSchema.model_validate(new_user)
 
 
-@router.post("/activate/", response_model=MessageResponseSchema,
-             summary="Activate user account",
-             description="Activate a user's account using their email and activation token.",
-             status_code=status.HTTP_200_OK,
-             responses={
+@router.post(
+    "/activate/",
+    response_model=MessageResponseSchema,
+    summary="Activate user account",
+    description="Activate a user's account using their email and activation token.",
+    status_code=status.HTTP_200_OK,
+    responses={
         400: {
             "description": "Bad Request - The activation token is invalid or expired, "
-                           "or the user account is already active.",
+            "or the user account is already active.",
             "content": {
                 "application/json": {
                     "examples": {
                         "invalid_token": {
                             "summary": "Invalid Token",
-                            "value": {
-                                "detail": "Invalid or expired activation token."
-                            }
+                            "value": {"detail": "Invalid or expired activation token."},
                         },
                         "already_active": {
                             "summary": "Account Already Active",
-                            "value": {
-                                "detail": "User account is already active."
-                            }
+                            "value": {"detail": "User account is already active."},
                         },
                     }
                 }
@@ -179,22 +183,27 @@ def activate_account(
     return MessageResponseSchema(message="User account activated successfully.")
 
 
-@router.post("/{user_id}/activate/", response_model=MessageResponseSchema,
-             summary="Activate user account by admin",
-             description="Allows an admin to activate a user account by user ID. If the requester is not an admin, a forbidden error is returned.",
-             responses={
-                 200: {
-                     "description": "User account activated successfully",
-                     "model": MessageResponseSchema,
-                 },
-                 403: {
-                     "description": "Forbidden: User does not have permissions",
-                 },
-                 404: {
-                     "description": "User not found",
-                 },
-             },
-             )
+@router.post(
+    "/{user_id}/activate/",
+    response_model=MessageResponseSchema,
+    summary="Activate user account by admin",
+    description=(
+        "Allows an admin to activate a user account by user ID. "
+        "If the requester is not an admin, a forbidden error is returned."
+    ),
+    responses={
+        200: {
+            "description": "User account activated successfully",
+            "model": MessageResponseSchema,
+        },
+        403: {
+            "description": "Forbidden: User does not have permissions",
+        },
+        404: {
+            "description": "User not found",
+        },
+    },
+)
 def activate_account_by_id(
     user_id: int,
     db: Session = Depends(get_db),
@@ -224,22 +233,27 @@ def activate_account_by_id(
     return MessageResponseSchema(message="User account activated successfully.")
 
 
-@router.post("/{user_id}/change_group", response_model=MessageResponseSchema,
-             summary="Change user group by admin",
-             description="Allows an admin to change a user's group (role) by user ID. If the requester is not an admin, a forbidden error is returned.",
-             responses={
-                 200: {
-                     "description": "User role changed successfully",
-                     "model": MessageResponseSchema,
-                 },
-                 403: {
-                     "description": "Forbidden: User does not have permissions",
-                 },
-                 404: {
-                     "description": "User or group not found",
-                 },
-             },
-             )
+@router.post(
+    "/{user_id}/change_group",
+    response_model=MessageResponseSchema,
+    summary="Change user group by admin",
+    description=(
+        "Allows an admin to change a user's group (role) by user ID. "
+        "If the requester is not an admin, a forbidden error is returned."
+    ),
+    responses={
+        200: {
+            "description": "User role changed successfully",
+            "model": MessageResponseSchema,
+        },
+        403: {
+            "description": "Forbidden: User does not have permissions",
+        },
+        404: {
+            "description": "User or group not found",
+        },
+    },
+)
 def change_user_group(
     user_id: int,
     group_data: ChangeGroupSchema,
@@ -275,14 +289,17 @@ def change_user_group(
     return MessageResponseSchema(message="User role changed successfully.")
 
 
-@router.post("/password-reset/request/", response_model=MessageResponseSchema,
-             summary="Request Password Reset Token",
-             description=(
-                     "Allows a user to request a password reset token. If the user exists and is active, "
-                     "a new token will be generated and any existing tokens will be invalidated."
-             ),
-             status_code=status.HTTP_200_OK,
-             )
+@router.post(
+    "/password-reset/request/",
+    response_model=MessageResponseSchema,
+    summary="Request Password Reset Token",
+    description=(
+        "Allows a user to request a password reset token. "
+        "If the user exists and is active, a new token will be generated "
+        "and any existing tokens will be invalidated."
+    ),
+    status_code=status.HTTP_200_OK,
+)
 def request_password_reset_token(
     data: PasswordResetRequestSchema,
     background_tasks: BackgroundTasks,
@@ -317,46 +334,45 @@ def request_password_reset_token(
     )
 
 
-@router.post("/reset-password/complete/", response_model=MessageResponseSchema,
-             summary="Reset User Password",
-             description="Reset a user's password if a valid token is provided.",
-             status_code=status.HTTP_200_OK,
-             responses={
-                 400: {
-                     "description":
-                         "Bad Request - The provided email or token is invalid, "
-                         "the token has expired, or the user account is not active."
-                     ,
-                     "content": {
-                         "application/json": {
-                             "examples": {
-                                 "invalid_email_or_token": {
-                                     "summary": "Invalid Email or Token",
-                                     "value": {
-                                         "detail": "Invalid email or token."
-                                     }
-                                 },
-                                 "expired_token": {
-                                     "summary": "Expired Token",
-                                     "value": {
-                                         "detail": "Invalid email or token."
-                                     }
-                                 }
-                             }
-                         }
-                     },
-                 },
-                 500: {
-                     "description": "Internal Server Error - An error occurred while resetting the password.",
-                     "content": {
-                         "application/json": {
-                             "example": {
-                                 "detail": "An error occurred while resetting the password."
-                             }
-                         }
-                     },
-                 },
-             },
+@router.post(
+    "/reset-password/complete/",
+    response_model=MessageResponseSchema,
+    summary="Reset User Password",
+    description="Reset a user's password if a valid token is provided.",
+    status_code=status.HTTP_200_OK,
+    responses={
+        400: {
+            "description": "Bad Request - The provided email or token is invalid, "
+            "the token has expired, or the user account is not active.",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "invalid_email_or_token": {
+                            "summary": "Invalid Email or Token",
+                            "value": {"detail": "Invalid email or token."},
+                        },
+                        "expired_token": {
+                            "summary": "Expired Token",
+                            "value": {"detail": "Invalid email or token."},
+                        },
+                    }
+                }
+            },
+        },
+        500: {
+            "description": (
+                "Internal Server Error - An error occurred "
+                "while resetting the password."
+            ),
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "An error occurred while resetting the password."
+                    }
+                }
+            },
+        },
+    },
 )
 def reset_password(
     data: PasswordResetCompleteRequestSchema,
@@ -417,9 +433,7 @@ def reset_password(
             "description": "Unauthorized - Invalid email or password.",
             "content": {
                 "application/json": {
-                    "example": {
-                        "detail": "Invalid email or password."
-                    }
+                    "example": {"detail": "Invalid email or password."}
                 }
             },
         },
@@ -427,14 +441,15 @@ def reset_password(
             "description": "Forbidden - User account is not activated.",
             "content": {
                 "application/json": {
-                    "example": {
-                        "detail": "User account is not activated."
-                    }
+                    "example": {"detail": "User account is not activated."}
                 }
             },
         },
         500: {
-            "description": "Internal Server Error - An error occurred while processing the request.",
+            "description": (
+                "Internal Server Error - An error occurred "
+                "while processing the request."
+            ),
             "content": {
                 "application/json": {
                     "example": {
@@ -491,43 +506,35 @@ def login_user(
     )
 
 
-@router.post("/refresh/", response_model=TokenRefreshResponseSchema,
-             summary="Refresh Access Token",
-             description="Refresh the access token using a valid refresh token.",
-             status_code=status.HTTP_200_OK,
-             responses={
-                 400: {
-                     "description": "Bad Request - The provided refresh token is invalid or expired.",
-                     "content": {
-                         "application/json": {
-                             "example": {
-                                 "detail": "Token has expired."
-                             }
-                         }
-                     },
-                 },
-                 401: {
-                     "description": "Unauthorized - Refresh token not found.",
-                     "content": {
-                         "application/json": {
-                             "example": {
-                                 "detail": "Refresh token not found."
-                             }
-                         }
-                     },
-                 },
-                 404: {
-                     "description": "Not Found - The user associated with the token does not exist.",
-                     "content": {
-                         "application/json": {
-                             "example": {
-                                 "detail": "User not found."
-                             }
-                         }
-                     },
-                 },
-             },
-             )
+@router.post(
+    "/refresh/",
+    response_model=TokenRefreshResponseSchema,
+    summary="Refresh Access Token",
+    description="Refresh the access token using a valid refresh token.",
+    status_code=status.HTTP_200_OK,
+    responses={
+        400: {
+            "description": (
+                "Bad Request - The provided refresh token is invalid or expired."
+            ),
+            "content": {
+                "application/json": {"example": {"detail": "Token has expired."}}
+            },
+        },
+        401: {
+            "description": "Unauthorized - Refresh token not found.",
+            "content": {
+                "application/json": {"example": {"detail": "Refresh token not found."}}
+            },
+        },
+        404: {
+            "description": (
+                "Not Found - The user associated with the token does not exist."
+            ),
+            "content": {"application/json": {"example": {"detail": "User not found."}}},
+        },
+    },
+)
 def refresh_access_token(
     token_data: TokenRefreshRequestSchema,
     db: Session = Depends(get_db),

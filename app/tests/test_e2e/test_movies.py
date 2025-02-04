@@ -43,6 +43,7 @@ def override_get_db():
     finally:
         db.close()
 
+
 app.dependency_overrides[get_db] = get_db
 
 client = TestClient(app)

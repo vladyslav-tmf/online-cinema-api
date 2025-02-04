@@ -1,14 +1,14 @@
 import datetime
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import RedirectResponse
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from starlette.responses import RedirectResponse
 
 from app.config.dependencies import get_current_user
-from app.database.models.accounts import UserModel, UserGroupEnum
-from app.database.models.orders import OrderModel, OrderItemModel, OrderStatusEnum
+from app.database.models.accounts import UserGroupEnum, UserModel
+from app.database.models.orders import OrderItemModel, OrderModel, OrderStatusEnum
 from app.database.models.shopping_carts import CartItemModel
 from app.database.session import get_db
 from app.routes.shopping_carts import check_movie_availability
@@ -102,6 +102,7 @@ def check_pending_orders(movie_ids: list[int], user_id: int, db: Session) -> Non
 
 @router.post(
     "/orders/",
+    response_model=None,
     summary="Create a new order",
     description=(
         "Creates a new order for the currently authenticated user. "
@@ -110,7 +111,6 @@ def check_pending_orders(movie_ids: list[int], user_id: int, db: Session) -> Non
     responses={
         303: {
             "description": "Redirects to the payment page for the created order",
-            "model": RedirectResponse,
         },
         409: {
             "description": "Conflict: Duplicate or empty cart",

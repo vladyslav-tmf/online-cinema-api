@@ -23,6 +23,25 @@ router = APIRouter()
     "/users/{user_id}/profile/",
     response_model=ProfileResponseSchema,
     status_code=status.HTTP_201_CREATED,
+    summary="Create a user profile",
+    description="Creates a new profile for a user, including personal information and avatar. Only admins or the user themselves can create a profile.",
+    responses={
+        201: {
+            "description": "Profile created successfully",
+            },
+        400: {
+            "description": "Bad request: The user already has a profile.",
+        },
+        401: {
+            "description": "Unauthorized: User not found or not active.",
+        },
+        403: {
+            "description": "Forbidden: You don't have permission to edit this profile.",
+        },
+        500: {
+            "description": "Internal server error: Failed to upload avatar to S3.",
+        },
+    },
 )
 def create_profile(
     user_id: int,

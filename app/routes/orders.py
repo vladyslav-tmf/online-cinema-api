@@ -17,7 +17,18 @@ from app.schemas.orders import OrderCreateSchema, OrderListResponseSchema, Order
 router = APIRouter()
 
 
-@router.get("/orders/")
+@router.get("/orders/", response_model=OrderListResponseSchema,
+            summary="Get a list of orders",
+            description="Fetches a paginated list of orders, optionally filtered by users, date, and status. Only admins can see all orders, while regular users can only see their own orders.",
+            responses={
+                200: {
+                    "description": "A list of orders",
+                },
+                404: {
+                    "description": "No orders found",
+                },
+            },
+            )
 def get_order_list(
     page: int = Query(1, ge=1, description="Page number (1-based index)"),
     per_page: int = Query(10, ge=1, le=20, description="Number of items per page"),
@@ -83,7 +94,21 @@ def check_pending_orders(movie_ids: list[int], user_id: int, db: Session) -> Non
             )
 
 
-@router.post("/orders/")
+@router.post("/orders/", summary="Create a new order",
+             description="Creates a new order for the currently authenticated user. The cart items are checked for availability and duplicates.",
+             responses={
+                 303: {
+                     "description": "Redirects to the payment page for the created order",
+                     "model": RedirectResponse,
+                 },
+                 409: {
+                     "description": "Conflict: Duplicate or empty cart",
+                 },
+                 400: {
+                     "description": "Bad request: Invalid input data",
+                 },
+             },
+             )
 def create_order(
     order_data: OrderCreateSchema,
     db: Session = Depends(get_db),
@@ -142,7 +167,20 @@ def create_order(
         raise HTTPException(status_code=400, detail="Invalid input data.")
 
 
-@router.post("/order/{order_id}/cancel")
+@router.post("/order/{order_id}/cancel", summary="Cancel an order",
+             description="Cancels the specified order. If the order is already paid, it redirects to the payment refund page.",
+             responses={
+                 200: {
+                     "description": "Redirects to the payment refund page if the order is paid",
+                 },
+                 403: {
+                     "description": "Forbidden: User does not have permission to cancel the order",
+                 },
+                 404: {
+                     "description": "Not found: The order with the given ID was not found",
+                 },
+             },
+             )
 def cancel_order(
     order_id: int,
     db: Session = Depends(get_db),
@@ -165,7 +203,21 @@ def cancel_order(
     db.commit()
 
 
-@router.delete("/order/{order_id}", status_code=204)
+@router.delete("/order/{order_id}", status_code=204,
+               summary="Delete an order",
+               description="Deletes the specified order. The user must be the one who created the order or an admin.",
+               responses={
+                   204: {
+                       "description": "Order deleted successfully",
+                   },
+                   403: {
+                       "description": "Forbidden: User does not have permission to delete the order",
+                   },
+                   404: {
+                       "description": "Not found: The order with the given ID was not found",
+                   },
+               },
+               )
 def delete_order(
     order_id: int,
     db: Session = Depends(get_db),

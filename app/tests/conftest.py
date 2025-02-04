@@ -2,9 +2,8 @@ import pytest
 from sqlalchemy import insert
 from starlette.testclient import TestClient
 
-from config.dependencies import get_s3_storage_client, get_accounts_email_notificator
 from app.config.settings import get_settings
-from app.database.models.accounts import UserGroupModel, UserGroupEnum
+from app.database.models.accounts import UserGroupEnum, UserGroupModel
 from app.database.session import get_db
 from app.main import app
 from app.security.token_manager import JWTAuthManager

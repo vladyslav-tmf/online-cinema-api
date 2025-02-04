@@ -186,27 +186,29 @@ def get_movies(
     )
 
 
-@router.get("/{movie_id}", response_model=MovieSchema,
-            summary="Retrieve a specific movie by its ID",
-            description=(
-                    "<h3>Fetches details of a specific movie by its unique ID.</h3>"
-                    "<p>This endpoint returns detailed information about the movie, "
-                    "including its title, release year, genres, directors, actors, and ratings.</p>"
-                    "<p>If the movie is not found, a 404 error is returned.</p>"
-            ),
-            responses={
-                status.HTTP_200_OK: {
-                    "description": "Movie details retrieved successfully.",
-                },
-                status.HTTP_404_NOT_FOUND: {
-                    "description": "Movie not found.",
-                    "content": {
-                        "application/json": {
-                            "example": {"detail": "Movie not found."}}
-                    },
-                },
+@router.get(
+    "/{movie_id}",
+    response_model=MovieSchema,
+    summary="Retrieve a specific movie by its ID",
+    description=(
+        "<h3>Fetches details of a specific movie by its unique ID.</h3>"
+        "<p>This endpoint returns detailed information about the movie, "
+        "including its title, release year, genres, "
+        "directors, actors, and ratings.</p>"
+        "<p>If the movie is not found, a 404 error is returned.</p>"
+    ),
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Movie details retrieved successfully.",
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "Movie not found.",
+            "content": {
+                "application/json": {"example": {"detail": "Movie not found."}}
             },
-            )
+        },
+    },
+)
 def get_movie(
     movie_id: int,
     db: Session = Depends(get_db),
@@ -295,7 +297,9 @@ def get_movie(
         status.HTTP_403_FORBIDDEN: {
             "description": "User is not authorized to create movies.",
             "content": {
-                "application/json": {"example": {"detail": "Only administrators can create movies"}}
+                "application/json": {
+                    "example": {"detail": "Only administrators can create movies"}
+                }
             },
         },
     },
@@ -371,22 +375,30 @@ def create_movie(
     return new_movie
 
 
-@router.put("/{movie_id}", response_model=MovieSchema,
-            summary="Update a movie",
-            description="Update an existing movie's details. Only administrators can perform this action.",
-            responses={
-                200: {
-                    "description": "Movie successfully updated",
-                    "model": MovieSchema,
-                },
-                403: {
-                    "description": "Forbidden - Only administrators can update movies",
-                },
-                404: {
-                    "description": "Movie not found or related resources (certification, genres, directors, stars) not found",
-                },
-            },
-            )
+@router.put(
+    "/{movie_id}",
+    response_model=MovieSchema,
+    summary="Update a movie",
+    description=(
+        "Update an existing movie's details. "
+        "Only administrators can perform this action."
+    ),
+    responses={
+        200: {
+            "description": "Movie successfully updated",
+            "model": MovieSchema,
+        },
+        403: {
+            "description": "Forbidden - Only administrators can update movies",
+        },
+        404: {
+            "description": (
+                "Movie not found or related resources "
+                "(certification, genres, directors, stars) not found"
+            ),
+        },
+    },
+)
 def update_movie(
     movie_id: int,
     movie_data: MovieUpdateSchema,
@@ -464,9 +476,12 @@ def update_movie(
 @router.delete(
     "/{movie_id}",
     summary="Delete a movie",
-    description="Delete an existing movie by its ID. Only administrators can perform this action.",
+    description=(
+        "Delete an existing movie by its ID. "
+        "Only administrators can perform this action."
+    ),
     status_code=status.HTTP_204_NO_CONTENT,
-responses={
+    responses={
         204: {
             "description": "Movie successfully deleted",
         },
@@ -499,22 +514,27 @@ def delete_movie(
     db.commit()
 
 
-@router.post("/{movie_id}/like", response_model=MovieLikeResponseSchema,
-             summary="Like or dislike a movie",
-             description="Allows an authenticated user to like or dislike a movie. If the user has already reacted, the existing reaction is updated or removed.",
-             responses={
-                 200: {
-                     "description": "Successfully added or updated the like/dislike",
-                     "model": MovieLikeResponseSchema,
-                 },
-                 400: {
-                     "description": "User has already liked/disliked this movie",
-                 },
-                 404: {
-                     "description": "Movie not found",
-                 },
-             },
-             )
+@router.post(
+    "/{movie_id}/like",
+    response_model=MovieLikeResponseSchema,
+    summary="Like or dislike a movie",
+    description=(
+        "Allows an authenticated user to like or dislike a movie."
+        "If the user has already reacted, the existing reaction is updated or removed."
+    ),
+    responses={
+        200: {
+            "description": "Successfully added or updated the like/dislike",
+            "model": MovieLikeResponseSchema,
+        },
+        400: {
+            "description": "User has already liked/disliked this movie",
+        },
+        404: {
+            "description": "Movie not found",
+        },
+    },
+)
 def like_movie(
     movie_id: int,
     like_data: MovieLikeCreateSchema,
@@ -556,15 +576,17 @@ def like_movie(
     return like
 
 
-@router.delete("/{movie_id}/like", status_code=status.HTTP_204_NO_CONTENT,
-               summary="Remove like or dislike from a movie",
-               description="Removes an authenticated user's like or dislike from a movie.",
-               responses={
-                   204: {
-                       "description": "Like/dislike successfully removed",
-                   },
-               },
-               )
+@router.delete(
+    "/{movie_id}/like",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove like or dislike from a movie",
+    description="Removes an authenticated user's like or dislike from a movie.",
+    responses={
+        204: {
+            "description": "Like/dislike successfully removed",
+        },
+    },
+)
 def remove_movie_like(
     movie_id: int,
     db: Session = Depends(get_db),
@@ -583,22 +605,27 @@ def remove_movie_like(
         db.commit()
 
 
-@router.post("/{movie_id}/favorite", response_model=MovieFavoriteResponseSchema,
-             summary="Add a movie to favorites",
-             description="Allows an authenticated user to add a movie to their list of favorites. If the movie is already in favorites, an error is returned.",
-             responses={
-                 200: {
-                     "description": "Successfully added to favorites",
-                     "model": MovieFavoriteResponseSchema,
-                 },
-                 400: {
-                     "description": "Movie is already in favorites",
-                 },
-                 404: {
-                     "description": "Movie not found",
-                 },
-             },
-             )
+@router.post(
+    "/{movie_id}/favorite",
+    response_model=MovieFavoriteResponseSchema,
+    summary="Add a movie to favorites",
+    description=(
+        "Allows an authenticated user to add a movie to their list of favorites. "
+        "If the movie is already in favorites, an error is returned."
+    ),
+    responses={
+        200: {
+            "description": "Successfully added to favorites",
+            "model": MovieFavoriteResponseSchema,
+        },
+        400: {
+            "description": "Movie is already in favorites",
+        },
+        404: {
+            "description": "Movie not found",
+        },
+    },
+)
 def add_to_favorites(
     movie_id: int,
     db: Session = Depends(get_db),
@@ -635,15 +662,17 @@ def add_to_favorites(
     return favorite
 
 
-@router.delete("/{movie_id}/favorite", status_code=status.HTTP_204_NO_CONTENT,
-               summary="Remove a movie from favorites",
-               description="Removes an authenticated user's favorite movie from their list.",
-               responses={
-                   204: {
-                       "description": "Successfully removed from favorites",
-                   },
-               },
-               )
+@router.delete(
+    "/{movie_id}/favorite",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove a movie from favorites",
+    description="Removes an authenticated user's favorite movie from their list.",
+    responses={
+        204: {
+            "description": "Successfully removed from favorites",
+        },
+    },
+)
 def remove_from_favorites(
     movie_id: int,
     db: Session = Depends(get_db),
@@ -662,22 +691,27 @@ def remove_from_favorites(
         db.commit()
 
 
-@router.post("/{movie_id}/rating", response_model=MovieRatingResponseSchema,
-             summary="Rate a movie",
-             description="Allows an authenticated user to rate a movie. If the user has already rated the movie, an error is returned.",
-             responses={
-                 200: {
-                     "description": "Successfully rated the movie",
-                     "model": MovieRatingResponseSchema,
-                 },
-                 400: {
-                     "description": "You have already rated this movie",
-                 },
-                 404: {
-                     "description": "Movie not found",
-                 },
-             },
-             )
+@router.post(
+    "/{movie_id}/rating",
+    response_model=MovieRatingResponseSchema,
+    summary="Rate a movie",
+    description=(
+        "Allows an authenticated user to rate a movie."
+        "If the user has already rated the movie, an error is returned."
+    ),
+    responses={
+        200: {
+            "description": "Successfully rated the movie",
+            "model": MovieRatingResponseSchema,
+        },
+        400: {
+            "description": "You have already rated this movie",
+        },
+        404: {
+            "description": "Movie not found",
+        },
+    },
+)
 def rate_movie(
     movie_id: int,
     rating_data: MovieRatingCreateSchema,
@@ -716,15 +750,17 @@ def rate_movie(
     return rating
 
 
-@router.delete("/{movie_id}/rating", status_code=status.HTTP_204_NO_CONTENT,
-               summary="Remove movie rating",
-               description="Removes the rating of a movie by the authenticated user.",
-               responses={
-                   204: {
-                       "description": "Successfully removed the rating",
-                   },
-               },
-               )
+@router.delete(
+    "/{movie_id}/rating",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove movie rating",
+    description="Removes the rating of a movie by the authenticated user.",
+    responses={
+        204: {
+            "description": "Successfully removed the rating",
+        },
+    },
+)
 def remove_movie_rating(
     movie_id: int,
     db: Session = Depends(get_db),
@@ -743,22 +779,27 @@ def remove_movie_rating(
         db.commit()
 
 
-@router.post("/{movie_id}/comments", response_model=MovieCommentResponseSchema,
-             summary="Create a comment on a movie",
-             description="Allows an authenticated user to create a comment on a movie. Users can also reply to existing comments by specifying the parent comment ID.",
-             responses={
-                 200: {
-                     "description": "Successfully created the comment",
-                     "model": MovieCommentResponseSchema,
-                 },
-                 400: {
-                     "description": "Invalid parent comment ID or comment data",
-                 },
-                 404: {
-                     "description": "Movie not found or parent comment not found",
-                 },
-             },
-             )
+@router.post(
+    "/{movie_id}/comments",
+    response_model=MovieCommentResponseSchema,
+    summary="Create a comment on a movie",
+    description=(
+        "Allows an authenticated user to create a comment on a movie."
+        "Users can also reply to existing comments by specifying the parent comment ID."
+    ),
+    responses={
+        200: {
+            "description": "Successfully created the comment",
+            "model": MovieCommentResponseSchema,
+        },
+        400: {
+            "description": "Invalid parent comment ID or comment data",
+        },
+        404: {
+            "description": "Movie not found or parent comment not found",
+        },
+    },
+)
 def create_comment(
     movie_id: int,
     comment_data: MovieCommentCreateSchema,
@@ -794,19 +835,24 @@ def create_comment(
     return comment
 
 
-@router.get("/{movie_id}/comments", response_model=list[MovieCommentResponseSchema],
-            summary="Get comments for a movie",
-            description="Fetches all comments for a specific movie. Each comment includes like count and whether the current user has liked it.",
-            responses={
-                200: {
-                    "description": "Successfully fetched the comments",
-                    "model": list[MovieCommentResponseSchema],
-                },
-                404: {
-                    "description": "Movie not found",
-                },
-            },
-            )
+@router.get(
+    "/{movie_id}/comments",
+    response_model=list[MovieCommentResponseSchema],
+    summary="Get comments for a movie",
+    description=(
+        "Fetches all comments for a specific movie. "
+        "Each comment includes like count and whether the current user has liked it."
+    ),
+    responses={
+        200: {
+            "description": "Successfully fetched the comments",
+            "model": list[MovieCommentResponseSchema],
+        },
+        404: {
+            "description": "Movie not found",
+        },
+    },
+)
 def get_movie_comments(
     movie_id: int,
     db: Session = Depends(get_db),
@@ -835,7 +881,11 @@ def get_movie_comments(
     "/{movie_id}/comments/{comment_id}/like",
     response_model=CommentLikeResponseSchema,
     summary="Like a comment",
-    description="Allows an authenticated user to like a specific comment on a movie. A user can only like a comment once. If they have already liked it, an error is returned.",
+    description=(
+        "Allows an authenticated user to like a specific comment on a movie. "
+        "A user can only like a comment once. "
+        "If they have already liked it, an error is returned."
+    ),
     responses={
         200: {
             "description": "Successfully liked the comment",
@@ -890,7 +940,10 @@ def like_comment(
     "/{movie_id}/comments/{comment_id}/like",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Remove like from a comment",
-    description="Allows an authenticated user to remove their like from a specific comment on a movie.",
+    description=(
+        "Allows an authenticated user to remove their like "
+        "from a specific comment on a movie."
+    ),
     responses={
         204: {
             "description": "Successfully removed the like from the comment",

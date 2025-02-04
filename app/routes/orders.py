@@ -1,15 +1,14 @@
 import datetime
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import RedirectResponse
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from starlette.responses import RedirectResponse
 
 from app.config.dependencies import get_current_user
-from app.database.models.accounts import UserModel, UserGroupEnum
-from app.database.models.orders import OrderModel, OrderItemModel, OrderStatusEnum
-from app.database.models.shopping_carts import CartItemModel
+from app.database.models.accounts import UserGroupEnum, UserModel
+from app.database.models.orders import OrderItemModel, OrderModel, OrderStatusEnum
 from app.database.session import get_db
 from app.routes.shopping_carts import check_movie_availability
 from app.schemas.orders import OrderCreateSchema, OrderListResponseSchema, OrderSchema
@@ -18,7 +17,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/orders/",
+    "/",
     response_model=OrderListResponseSchema,
     summary="Get a list of orders",
     description=(
@@ -101,7 +100,8 @@ def check_pending_orders(movie_ids: list[int], user_id: int, db: Session) -> Non
 
 
 @router.post(
-    "/orders/",
+    "/",
+    response_model=None,
     summary="Create a new order",
     description=(
         "Creates a new order for the currently authenticated user. "
@@ -110,7 +110,6 @@ def check_pending_orders(movie_ids: list[int], user_id: int, db: Session) -> Non
     responses={
         303: {
             "description": "Redirects to the payment page for the created order",
-            "model": RedirectResponse,
         },
         409: {
             "description": "Conflict: Duplicate or empty cart",
@@ -141,8 +140,10 @@ def create_order(
         total_amount = Decimal("0")
 
         for order_item in order_data.order_items:
-            existing_order_item = db.query(CartItemModel).filter_by(
-                order_id=order.id, movie_id=order_item.movie_id
+            existing_order_item = (
+                db.query(OrderItemModel)
+                .filter_by(order_id=order.id, movie_id=order_item.movie_id)
+                .first()
             )
 
             check_movie_availability(order_item.movie_id, current_user.id, db)
@@ -150,16 +151,17 @@ def create_order(
             if existing_order_item:
                 raise HTTPException(
                     status_code=409,
-                    detail=f"Duplicate purchase of {order_item.movie.name}",
+                    detail=f"Duplicate purchase of movie with ID {order_item.movie_id}",
                 )
 
+            price_at_order = Decimal(str(order_item.movie.price))
             item = OrderItemModel(
                 order_id=order.id,
                 movie_id=order_item.movie_id,
-                price_at_order=order_item.movie.price,
+                price_at_order=price_at_order,
             )
 
-            total_amount += item.price_at_order
+            total_amount += price_at_order
 
             db.add(item)
             db.flush()
@@ -179,7 +181,7 @@ def create_order(
 
 
 @router.post(
-    "/order/{order_id}/cancel",
+    "/{order_id}/cancel",
     summary="Cancel an order",
     description=(
         "Cancels the specified order. "
@@ -222,7 +224,7 @@ def cancel_order(
 
 
 @router.delete(
-    "/order/{order_id}",
+    "/{order_id}",
     status_code=204,
     summary="Delete an order",
     description=(

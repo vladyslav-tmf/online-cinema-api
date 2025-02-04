@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.database.init_db import init_user_groups
 from app.database.session import SessionLocal
@@ -11,6 +12,19 @@ from app.routes.profiles import router as profiles_router
 from app.routes.shopping_carts import router as shopping_carts_router
 
 app = FastAPI()
+
+
+origins = [
+    "*",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 
 if __name__ == "__main__":

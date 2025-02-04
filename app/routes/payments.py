@@ -22,15 +22,18 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 settings = get_settings()
 
 
-@router.get("/pay", summary="Create a Stripe checkout session",
-    description="This endpoint creates a Stripe checkout session for an order. Only the owner of a pending order can proceed with payment.",
+@router.get(
+    "/pay",
+    summary="Create a Stripe checkout session",
+    description="This endpoint creates a Stripe checkout session for an order."
+                " Only the owner of a pending order can proceed with payment.",
     responses={
         status.HTTP_303_SEE_OTHER: {"description": "Redirect to Stripe checkout page"},
         status.HTTP_400_BAD_REQUEST: {"description": "Order is not pending"},
         status.HTTP_403_FORBIDDEN: {"description": "User does not own the order"},
-        status.HTTP_404_NOT_FOUND: {"description": "Order not found"}
-    }
-        )
+        status.HTTP_404_NOT_FOUND: {"description": "Order not found"},
+    },
+)
 def create_checkout_session(
     order_id: int,
     db: Session = Depends(get_db),
@@ -79,12 +82,17 @@ def create_checkout_session(
     return RedirectResponse(checkout_session.url, status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.post("/webhook", summary="Stripe webhook for payment updates",
-    description="This endpoint listens to Stripe events and updates the order and payment status accordingly. Sends an email confirmation after successful payment.",
+@router.post(
+    "/webhook",
+    summary="Stripe webhook for payment updates",
+    description="This endpoint listens to Stripe events and updates the order "
+                "and payment status accordingly. Sends an email confirmation "
+                "after successful payment.",
     responses={
         status.HTTP_200_OK: {"description": "Webhook event processed successfully"},
         status.HTTP_400_BAD_REQUEST: {"description": "Invalid payload or signature"},
-    })
+    },
+)
 async def stripe_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -147,19 +155,19 @@ async def stripe_webhook(
     return {}
 
 
-@router.get("/success", summary="Handle successful payment",
+@router.get(
+    "/success",
+    summary="Handle successful payment",
     description="This endpoint confirms whether a payment was successful.",
     responses={
         status.HTTP_200_OK: {
-            "description": "Payment successful. The user can now access their purchased movies."
+            "description": "Payment successful. The user can now access "
+                           "their purchased movies."
         },
-        status.HTTP_202_ACCEPTED: {
-            "description": "Payment is still being processed."
-        },
-        status.HTTP_400_BAD_REQUEST: {
-            "description": "Invalid session ID."
-        }
-    })
+        status.HTTP_202_ACCEPTED: {"description": "Payment is still being processed."},
+        status.HTTP_400_BAD_REQUEST: {"description": "Invalid session ID."},
+    },
+)
 def payment_success(session_id: str):
     try:
         session = stripe.checkout.Session.retrieve(session_id)
@@ -172,22 +180,23 @@ def payment_success(session_id: str):
         )
 
 
-@router.get("/cancel", summary="Handle canceled payment",
-    description="Marks the most recent pending order as canceled if the user decides not to complete the payment.",
+@router.get(
+    "/cancel",
+    summary="Handle canceled payment",
+    description="Marks the most recent pending order as canceled if the user"
+                " decides not to complete the payment.",
     responses={
-        status.HTTP_200_OK: {
-            "description": "Payment was canceled successfully."
-        }
-    })
+        status.HTTP_200_OK: {"description": "Payment was canceled successfully."}
+    },
+)
 def payment_canceled(
-    db: Session = Depends(get_db),
-    current_user: UserModel = Depends(get_current_user)
+    db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)
 ):
     order = (
         db.query(OrderModel)
         .filter(
             OrderModel.user_id == current_user.id,
-            OrderModel.status == OrderStatusEnum.PENDING
+            OrderModel.status == OrderStatusEnum.PENDING,
         )
         .order_by(OrderModel.created_at.desc())
         .first()
@@ -200,22 +209,23 @@ def payment_canceled(
     return {"message": "Payment was canceled."}
 
 
-@router.post("/refund/{order_id}", summary="Request a refund",
-    description="Allows a user to request a refund for a paid order. If the order is valid and was previously paid, a refund is processed via Stripe.",
+@router.post(
+    "/refund/{order_id}",
+    summary="Request a refund",
+    description="Allows a user to request a refund for a paid order."
+                " If the order is valid and was previously paid, "
+                "a refund is processed via Stripe.",
     responses={
-        status.HTTP_200_OK: {
-            "description": "Refund processed successfully."
-        },
+        status.HTTP_200_OK: {"description": "Refund processed successfully."},
         status.HTTP_400_BAD_REQUEST: {
             "description": "Order is not paid or refund request failed."
         },
         status.HTTP_403_FORBIDDEN: {
             "description": "User is not authorized to request a refund for this order."
         },
-        status.HTTP_404_NOT_FOUND: {
-            "description": "Order or payment not found."
-        }
-    })
+        status.HTTP_404_NOT_FOUND: {"description": "Order or payment not found."},
+    },
+)
 def refund_payment(
     order_id: int,
     db: Session = Depends(get_db),
@@ -255,13 +265,17 @@ def refund_payment(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
-@router.get("/history", summary="Get payment history",
-    description="Retrieves the list of all payments made by the authenticated user, ordered from the most recent to the oldest.",
+@router.get(
+    "/history",
+    summary="Get payment history",
+    description="Retrieves the list of all payments made by the authenticated "
+                "user, ordered from the most recent to the oldest.",
     responses={
         status.HTTP_200_OK: {
             "description": "Returns a list of payments made by the user."
         }
-    })
+    },
+)
 def payment_history(
     db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)
 ):

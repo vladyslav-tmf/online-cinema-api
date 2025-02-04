@@ -33,6 +33,9 @@ class OrderModel(Base):
     payments: Mapped[list["PaymentModel"]] = relationship(
         "PaymentModel", back_populates="order", cascade="all, delete-orphan"
     )
+    items: Mapped[list["OrderItemModel"]] = relationship(
+        "OrderItemModel", back_populates="order", cascade="all, delete-orphan"
+    )
 
 
 class OrderItemModel(Base):
@@ -48,6 +51,7 @@ class OrderItemModel(Base):
     price_at_order: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
     movie: Mapped[MovieModel] = relationship("MovieModel", back_populates="order_items")
+    order: Mapped["OrderModel"] = relationship("OrderModel", back_populates="items")
     payment_items: Mapped[list["PaymentItemModel"]] = relationship(
         "PaymentItemModel", back_populates="order_item", cascade="all, delete-orphan"
     )

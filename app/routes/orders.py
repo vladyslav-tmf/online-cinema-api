@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 from app.config.dependencies import get_current_user
 from app.database.models.accounts import UserGroupEnum, UserModel
 from app.database.models.orders import OrderItemModel, OrderModel, OrderStatusEnum
-from app.database.models.shopping_carts import CartItemModel
 from app.database.session import get_db
 from app.routes.shopping_carts import check_movie_availability
 from app.schemas.orders import OrderCreateSchema, OrderListResponseSchema, OrderSchema
@@ -141,8 +140,10 @@ def create_order(
         total_amount = Decimal("0")
 
         for order_item in order_data.order_items:
-            existing_order_item = db.query(CartItemModel).filter_by(
-                order_id=order.id, movie_id=order_item.movie_id
+            existing_order_item = (
+                db.query(OrderItemModel)
+                .filter_by(order_id=order.id, movie_id=order_item.movie_id)
+                .first()
             )
 
             check_movie_availability(order_item.movie_id, current_user.id, db)
@@ -150,16 +151,17 @@ def create_order(
             if existing_order_item:
                 raise HTTPException(
                     status_code=409,
-                    detail=f"Duplicate purchase of {order_item.movie.name}",
+                    detail=f"Duplicate purchase of movie with ID {order_item.movie_id}",
                 )
 
+            price_at_order = Decimal(str(order_item.movie.price))
             item = OrderItemModel(
                 order_id=order.id,
                 movie_id=order_item.movie_id,
-                price_at_order=order_item.movie.price,
+                price_at_order=price_at_order,
             )
 
-            total_amount += item.price_at_order
+            total_amount += price_at_order
 
             db.add(item)
             db.flush()

@@ -5,8 +5,8 @@ from pydantic import BaseModel
 
 from app.database.models.orders import OrderStatusEnum
 from app.schemas.examples.orders import order_item_schema_example, order_schema_example
-from app.schemas.shopping_carts import CartResponseSchema
 from app.schemas.movies import MovieSchema
+from app.schemas.shopping_carts import CartItemResponseSchema
 
 
 class OrderSchema(BaseModel):
@@ -24,7 +24,9 @@ class OrderSchema(BaseModel):
 
 
 class OrderCreateSchema(BaseModel):
-    order_items: list[CartResponseSchema]
+    order_items: list[CartItemResponseSchema]
+
+    model_config = {"from_attributes": True}
 
 
 class OrderListResponseSchema(BaseModel):

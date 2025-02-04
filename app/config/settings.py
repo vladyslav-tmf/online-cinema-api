@@ -13,6 +13,7 @@ class BaseAppSettings(BaseSettings):
     VERSION: str = "0.1.0"
     API_V1_STR: str = "/api/v1"
     DEBUG: bool = False
+    BASE_URL: str = os.getenv("BASE_URL", "http://localhost:8000")
     BASE_DIR: Path = Path(__file__).resolve().parent.parent
     PATH_TO_DB: str = str(BASE_DIR / "database" / "source" / "theater.db")
 

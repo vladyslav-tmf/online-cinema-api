@@ -1,7 +1,7 @@
 import datetime
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/orders/",
+    "/",
     response_model=OrderListResponseSchema,
     summary="Get a list of orders",
     description=(
@@ -101,7 +101,7 @@ def check_pending_orders(movie_ids: list[int], user_id: int, db: Session) -> Non
 
 
 @router.post(
-    "/orders/",
+    "/",
     response_model=None,
     summary="Create a new order",
     description=(
@@ -179,7 +179,7 @@ def create_order(
 
 
 @router.post(
-    "/order/{order_id}/cancel",
+    "/{order_id}/cancel",
     summary="Cancel an order",
     description=(
         "Cancels the specified order. "
@@ -222,7 +222,7 @@ def cancel_order(
 
 
 @router.delete(
-    "/order/{order_id}",
+    "/{order_id}",
     status_code=204,
     summary="Delete an order",
     description=(
